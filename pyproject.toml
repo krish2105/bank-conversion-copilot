@@ -1,0 +1,22 @@
+[project]
+name = "bank-conversion-copilot"
+version = "0.1.0"
+description = "Cost-optimised targeting for outbound term-deposit campaigns"
+requires-python = ">=3.12"
+
+[tool.ruff]
+line-length = 90
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+
+[tool.mypy]
+python_version = "3.12"
+ignore_missing_imports = true
+warn_unused_ignores = true
+disallow_untyped_defs = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"

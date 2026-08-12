@@ -1,0 +1,16 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+data/*.csv
+data/*.zip
+deploy/
+*.egg-info/
+.DS_Store
+reports/*.docx
+reports/*.pdf
+reports/figures/*.png
+!reports/figures/.gitkeep
