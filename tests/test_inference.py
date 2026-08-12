@@ -1,6 +1,7 @@
 """Three-stage explainer tests, plus the shared serving layer's end-to-end
 contract: train tiny model -> save -> reload via the real load_bundle ->
 score_one / score_batch / explain."""
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -10,10 +11,26 @@ from sklearn.frozen import FrozenEstimator
 from sklearn.linear_model import LogisticRegression
 
 from src import config
-from src.data.loader import DatasetBundle, audit_quality, build_period_index, split_xy, temporal_split
-from src.explain.shap_engine import ExplanationResult, _normalize_shap_shape, explain_prediction
+from src.data.loader import (
+    DatasetBundle,
+    audit_quality,
+    build_period_index,
+    split_xy,
+    temporal_split,
+)
+from src.explain.shap_engine import (
+    ExplanationResult,
+    _normalize_shap_shape,
+    explain_prediction,
+)
 from src.features.pipeline import build_feature_pipeline, get_feature_names
-from src.inference.predict import BatchResult, ScoreResult, load_bundle, score_batch, score_one
+from src.inference.predict import (
+    BatchResult,
+    ScoreResult,
+    load_bundle,
+    score_batch,
+    score_one,
+)
 from src.models.train import train_and_save
 
 
@@ -139,8 +156,12 @@ def test_end_to_end_score_batch_tolerant_ingestion(trained_bundle_path, syntheti
     assert any("duration" in w or "leaky" in w.lower() for w in batch.warnings)
 
 
-def test_score_batch_capacity_mode_hits_requested_share(trained_bundle_path, synthetic_frame):
+def test_score_batch_capacity_mode_hits_requested_share(
+    trained_bundle_path, synthetic_frame
+):
     bundle = load_bundle(model_path=trained_bundle_path)
-    batch = score_batch(bundle, synthetic_frame.drop(columns=["duration"]), capacity_fraction=0.10)
+    batch = score_batch(
+        bundle, synthetic_frame.drop(columns=["duration"]), capacity_fraction=0.10
+    )
     called_share = (batch.scored["verdict"] == "CALL").mean()
     assert called_share == pytest.approx(0.10, abs=0.03)

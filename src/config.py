@@ -38,10 +38,26 @@ TARGET_COLUMN = "y"
 POSITIVE_LABEL = "yes"
 
 RAW_INPUT_COLUMNS: tuple[str, ...] = (
-    "age", "job", "marital", "education", "default", "housing", "loan",
-    "contact", "month", "day_of_week", "duration", "campaign", "pdays",
-    "previous", "poutcome", "emp.var.rate", "cons.price.idx",
-    "cons.conf.idx", "euribor3m", "nr.employed",
+    "age",
+    "job",
+    "marital",
+    "education",
+    "default",
+    "housing",
+    "loan",
+    "contact",
+    "month",
+    "day_of_week",
+    "duration",
+    "campaign",
+    "pdays",
+    "previous",
+    "poutcome",
+    "emp.var.rate",
+    "cons.price.idx",
+    "cons.conf.idx",
+    "euribor3m",
+    "nr.employed",
 )
 
 # --- Leakage control ------------------------------------------------------
@@ -57,7 +73,12 @@ LEAKAGE_REASONS: dict[str, str] = {
 
 # --- Missing-value handling -------------------------------------------
 UNKNOWN_MARKER_COLUMNS: tuple[str, ...] = (
-    "job", "marital", "education", "default", "housing", "loan",
+    "job",
+    "marital",
+    "education",
+    "default",
+    "housing",
+    "loan",
 )
 PDAYS_SENTINEL = 999
 
@@ -66,13 +87,25 @@ FEATURE_NEVER_CONTACTED = "never_contacted_before"
 FEATURE_N_UNKNOWN = "n_unknown_fields"
 FEATURE_CONTACT_INTENSITY = "contact_intensity"
 ENGINEERED_FEATURES: tuple[str, ...] = (
-    FEATURE_NEVER_CONTACTED, FEATURE_N_UNKNOWN, FEATURE_CONTACT_INTENSITY,
+    FEATURE_NEVER_CONTACTED,
+    FEATURE_N_UNKNOWN,
+    FEATURE_CONTACT_INTENSITY,
 )
 
 # --- Temporal split -------------------------------------------------------
 MONTH_ORDER: tuple[str, ...] = (
-    "jan", "feb", "mar", "apr", "may", "jun",
-    "jul", "aug", "sep", "oct", "nov", "dec",
+    "jan",
+    "feb",
+    "mar",
+    "apr",
+    "may",
+    "jun",
+    "jul",
+    "aug",
+    "sep",
+    "oct",
+    "nov",
+    "dec",
 )
 BASE_YEAR = 2008
 TRAIN_FRACTION = 0.70
@@ -100,7 +133,9 @@ class CostMatrix:
     def net_value(self, probabilities: np.ndarray, threshold: float) -> float:
         probabilities = np.asarray(probabilities, dtype=float)
         call_mask = probabilities >= threshold
-        called = probabilities[call_mask] * self.revenue_per_subscription - self.cost_per_call
+        called = (
+            probabilities[call_mask] * self.revenue_per_subscription - self.cost_per_call
+        )
         skipped = -probabilities[~call_mask] * self.cost_of_missed_customer
         return float(np.sum(called) + np.sum(skipped))
 
@@ -126,74 +161,170 @@ class FieldSpec:
 FIELD_SPECS: tuple[FieldSpec, ...] = (
     FieldSpec("age", "numeric", 40, "Age", min_value=18, max_value=95, step=1),
     FieldSpec(
-        "job", "categorical", "admin.", "Job",
+        "job",
+        "categorical",
+        "admin.",
+        "Job",
         levels=(
-            "admin.", "blue-collar", "entrepreneur", "housemaid", "management",
-            "retired", "self-employed", "services", "student", "technician",
-            "unemployed", "unknown",
+            "admin.",
+            "blue-collar",
+            "entrepreneur",
+            "housemaid",
+            "management",
+            "retired",
+            "self-employed",
+            "services",
+            "student",
+            "technician",
+            "unemployed",
+            "unknown",
         ),
     ),
     FieldSpec(
-        "marital", "categorical", "married", "Marital status",
+        "marital",
+        "categorical",
+        "married",
+        "Marital status",
         levels=("divorced", "married", "single", "unknown"),
     ),
     FieldSpec(
-        "education", "categorical", "university.degree", "Education",
+        "education",
+        "categorical",
+        "university.degree",
+        "Education",
         levels=(
-            "basic.4y", "basic.6y", "basic.9y", "high.school", "illiterate",
-            "professional.course", "university.degree", "unknown",
+            "basic.4y",
+            "basic.6y",
+            "basic.9y",
+            "high.school",
+            "illiterate",
+            "professional.course",
+            "university.degree",
+            "unknown",
         ),
     ),
-    FieldSpec("default", "categorical", "no", "Has credit in default?", levels=("no", "yes", "unknown")),
-    FieldSpec("housing", "categorical", "yes", "Has housing loan?", levels=("no", "yes", "unknown")),
-    FieldSpec("loan", "categorical", "no", "Has personal loan?", levels=("no", "yes", "unknown")),
-    FieldSpec("contact", "categorical", "cellular", "Contact type", levels=("cellular", "telephone")),
     FieldSpec(
-        "month", "categorical", "may", "Last contact month",
+        "default",
+        "categorical",
+        "no",
+        "Has credit in default?",
+        levels=("no", "yes", "unknown"),
+    ),
+    FieldSpec(
+        "housing",
+        "categorical",
+        "yes",
+        "Has housing loan?",
+        levels=("no", "yes", "unknown"),
+    ),
+    FieldSpec(
+        "loan", "categorical", "no", "Has personal loan?", levels=("no", "yes", "unknown")
+    ),
+    FieldSpec(
+        "contact",
+        "categorical",
+        "cellular",
+        "Contact type",
+        levels=("cellular", "telephone"),
+    ),
+    FieldSpec(
+        "month",
+        "categorical",
+        "may",
+        "Last contact month",
         levels=("mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"),
     ),
     FieldSpec(
-        "day_of_week", "categorical", "mon", "Last contact day of week",
+        "day_of_week",
+        "categorical",
+        "mon",
+        "Last contact day of week",
         levels=("mon", "tue", "wed", "thu", "fri"),
     ),
     FieldSpec(
-        "campaign", "numeric", 2, "Contacts this campaign",
-        help_text="Number of contacts for this client during this campaign, including the current one.",
-        min_value=1, max_value=50, step=1,
+        "campaign",
+        "numeric",
+        2,
+        "Contacts this campaign",
+        help_text=(
+            "Number of contacts for this client during this campaign, "
+            "including the current one."
+        ),
+        min_value=1,
+        max_value=50,
+        step=1,
     ),
     FieldSpec(
-        "pdays", "numeric", 999, "Days since previous contact",
+        "pdays",
+        "numeric",
+        999,
+        "Days since previous contact",
         help_text="999 means never previously contacted.",
-        min_value=0, max_value=999, step=1,
+        min_value=0,
+        max_value=999,
+        step=1,
     ),
     FieldSpec(
-        "previous", "numeric", 0, "Prior contacts",
+        "previous",
+        "numeric",
+        0,
+        "Prior contacts",
         help_text="Number of contacts before this campaign for this client.",
-        min_value=0, max_value=10, step=1,
+        min_value=0,
+        max_value=10,
+        step=1,
     ),
     FieldSpec(
-        "poutcome", "categorical", "nonexistent", "Previous campaign outcome",
+        "poutcome",
+        "categorical",
+        "nonexistent",
+        "Previous campaign outcome",
         levels=("failure", "nonexistent", "success"),
     ),
     FieldSpec(
-        "emp.var.rate", "numeric", 1.1, "Employment variation rate",
-        min_value=-3.4, max_value=1.4, step=0.1,
+        "emp.var.rate",
+        "numeric",
+        1.1,
+        "Employment variation rate",
+        min_value=-3.4,
+        max_value=1.4,
+        step=0.1,
     ),
     FieldSpec(
-        "cons.price.idx", "numeric", 93.994, "Consumer price index",
-        min_value=92.0, max_value=95.0, step=0.01,
+        "cons.price.idx",
+        "numeric",
+        93.994,
+        "Consumer price index",
+        min_value=92.0,
+        max_value=95.0,
+        step=0.01,
     ),
     FieldSpec(
-        "cons.conf.idx", "numeric", -36.4, "Consumer confidence index",
-        min_value=-51.0, max_value=-26.0, step=0.1,
+        "cons.conf.idx",
+        "numeric",
+        -36.4,
+        "Consumer confidence index",
+        min_value=-51.0,
+        max_value=-26.0,
+        step=0.1,
     ),
     FieldSpec(
-        "euribor3m", "numeric", 4.857, "Euribor 3-month rate",
-        min_value=0.6, max_value=5.1, step=0.001,
+        "euribor3m",
+        "numeric",
+        4.857,
+        "Euribor 3-month rate",
+        min_value=0.6,
+        max_value=5.1,
+        step=0.001,
     ),
     FieldSpec(
-        "nr.employed", "numeric", 5191.0, "Number employed (macro index)",
-        min_value=4950.0, max_value=5230.0, step=1.0,
+        "nr.employed",
+        "numeric",
+        5191.0,
+        "Number employed (macro index)",
+        min_value=4950.0,
+        max_value=5230.0,
+        step=1.0,
     ),
 )
 APP_FIELD_ORDER: tuple[str, ...] = tuple(f.name for f in FIELD_SPECS)

@@ -73,13 +73,17 @@ def _fields_to_frame(fields: dict) -> pd.DataFrame:
 
 
 def score_one(
-    bundle: dict, fields: dict, cost_matrix: config.CostMatrix = config.DEFAULT_COST_MATRIX
+    bundle: dict,
+    fields: dict,
+    cost_matrix: config.CostMatrix = config.DEFAULT_COST_MATRIX,
 ) -> ScoreResult:
     row = _fields_to_frame(fields)
     probability = float(bundle["model"].predict_proba(row)[:, 1][0])
     threshold = float(bundle["threshold"])
     verdict = "CALL" if probability >= threshold else "SKIP"
-    expected_value = probability * cost_matrix.revenue_per_subscription - cost_matrix.cost_per_call
+    expected_value = (
+        probability * cost_matrix.revenue_per_subscription - cost_matrix.cost_per_call
+    )
     explanation = explain_prediction(bundle, row)
     return ScoreResult(
         probability=probability,
@@ -108,7 +112,9 @@ def _tolerant_ingest(frame: pd.DataFrame) -> tuple[pd.DataFrame, list[str]]:
     for spec in config.FIELD_SPECS:
         if spec.name not in clean.columns:
             clean[spec.name] = spec.default
-            notes.append(f"Column '{spec.name}' missing — filled with default {spec.default!r}.")
+            notes.append(
+                f"Column '{spec.name}' missing — filled with default {spec.default!r}."
+            )
         elif spec.kind == "categorical":
             normalized = clean[spec.name].astype(str).str.strip().str.lower()
             unseen = sorted(set(normalized) - set(spec.levels))

@@ -29,14 +29,32 @@ def make_synthetic_bank_frame(n_per_month: int = 300, seed: int = 42) -> pd.Data
 
     day_of_week = rng.choice(["mon", "tue", "wed", "thu", "fri"], size=n)
     job = rng.choice(
-        ["admin.", "blue-collar", "technician", "services", "management",
-         "retired", "student", "unknown"],
-        size=n, p=[0.22, 0.20, 0.15, 0.12, 0.10, 0.08, 0.05, 0.08],
+        [
+            "admin.",
+            "blue-collar",
+            "technician",
+            "services",
+            "management",
+            "retired",
+            "student",
+            "unknown",
+        ],
+        size=n,
+        p=[0.22, 0.20, 0.15, 0.12, 0.10, 0.08, 0.05, 0.08],
     )
-    marital = rng.choice(["married", "single", "divorced", "unknown"], size=n, p=[0.55, 0.28, 0.14, 0.03])
+    marital = rng.choice(
+        ["married", "single", "divorced", "unknown"], size=n, p=[0.55, 0.28, 0.14, 0.03]
+    )
     education = rng.choice(
-        ["university.degree", "high.school", "basic.9y", "professional.course", "unknown"],
-        size=n, p=[0.30, 0.25, 0.20, 0.15, 0.10],
+        [
+            "university.degree",
+            "high.school",
+            "basic.9y",
+            "professional.course",
+            "unknown",
+        ],
+        size=n,
+        p=[0.30, 0.25, 0.20, 0.15, 0.10],
     )
     default = rng.choice(["no", "unknown", "yes"], size=n, p=[0.78, 0.20, 0.02])
     housing = rng.choice(["yes", "no", "unknown"], size=n, p=[0.52, 0.44, 0.04])
@@ -50,11 +68,19 @@ def make_synthetic_bank_frame(n_per_month: int = 300, seed: int = 42) -> pd.Data
     pdays = np.where(never_contacted, config.PDAYS_SENTINEL, rng.integers(1, 27, size=n))
     previous = np.where(never_contacted, 0, rng.integers(1, 4, size=n))
     poutcome = np.where(
-        never_contacted, "nonexistent",
+        never_contacted,
+        "nonexistent",
         rng.choice(["failure", "success"], size=n, p=[0.7, 0.3]),
     )
 
-    month_to_rate = {"oct": -1.0, "nov": -1.5, "dec": -2.0, "mar": -1.8, "apr": -1.2, "may": 1.1}
+    month_to_rate = {
+        "oct": -1.0,
+        "nov": -1.5,
+        "dec": -2.0,
+        "mar": -1.8,
+        "apr": -1.2,
+        "may": 1.1,
+    }
     emp_var_rate = np.array([month_to_rate[m] for m in months]) + rng.normal(0, 0.05, n)
     cons_price_idx = 93.0 + rng.normal(0, 0.3, n)
     cons_conf_idx = -40.0 + rng.normal(0, 3.0, n)
@@ -78,15 +104,31 @@ def make_synthetic_bank_frame(n_per_month: int = 300, seed: int = 42) -> pd.Data
         flip_down = (y == "yes") & (rng.random(n) < (1 - 0.11 / positive_rate))
         y = np.where(flip_down, "no", y)
 
-    frame = pd.DataFrame({
-        "age": age, "job": job, "marital": marital, "education": education,
-        "default": default, "housing": housing, "loan": loan, "contact": contact,
-        "month": months, "day_of_week": day_of_week, "duration": duration,
-        "campaign": campaign, "pdays": pdays, "previous": previous,
-        "poutcome": poutcome, "emp.var.rate": emp_var_rate,
-        "cons.price.idx": cons_price_idx, "cons.conf.idx": cons_conf_idx,
-        "euribor3m": euribor3m, "nr.employed": nr_employed, "y": y,
-    })
+    frame = pd.DataFrame(
+        {
+            "age": age,
+            "job": job,
+            "marital": marital,
+            "education": education,
+            "default": default,
+            "housing": housing,
+            "loan": loan,
+            "contact": contact,
+            "month": months,
+            "day_of_week": day_of_week,
+            "duration": duration,
+            "campaign": campaign,
+            "pdays": pdays,
+            "previous": previous,
+            "poutcome": poutcome,
+            "emp.var.rate": emp_var_rate,
+            "cons.price.idx": cons_price_idx,
+            "cons.conf.idx": cons_conf_idx,
+            "euribor3m": euribor3m,
+            "nr.employed": nr_employed,
+            "y": y,
+        }
+    )
 
     duplicates = frame.iloc[[5, n // 2, n - 5]].copy()
     return pd.concat([frame, duplicates], ignore_index=True)

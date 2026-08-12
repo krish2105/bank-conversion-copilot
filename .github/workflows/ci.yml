@@ -1,0 +1,65 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - run: pip install -r requirements-dev.txt
+      - run: ruff check .
+      - run: ruff format --check .
+      - name: mypy (advisory)
+        run: mypy src || true
+      - run: python -m pytest -v
+
+  smoke-train:
+    runs-on: ubuntu-latest
+    needs: lint-and-test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements-dev.txt
+      - name: Train on the synthetic fixture (no network -- proves the pipeline runs end to end)
+        run: |
+          python -c "
+          import tempfile
+          from pathlib import Path
+          from tests.conftest import make_synthetic_bank_frame
+          from src.data.loader import validate_schema, audit_quality, build_period_index, temporal_split, DatasetBundle
+          from src.models.train import train_and_save
+
+          frame = make_synthetic_bank_frame()
+          validate_schema(frame)
+          quality = audit_quality(frame)
+          periods = build_period_index(frame)
+          train_df, valid_df, test_df = temporal_split(frame, periods)
+          dataset = DatasetBundle(train=train_df, valid=valid_df, test=test_df, quality=quality)
+
+          with tempfile.TemporaryDirectory() as tmp:
+              tmp_dir = Path(tmp)
+              metrics = train_and_save(
+                  dataset,
+                  model_path=tmp_dir / 'model.joblib',
+                  metrics_path=tmp_dir / 'metrics.json',
+                  model_card_path=tmp_dir / 'model_card.md',
+                  drift_path=tmp_dir / 'drift.json',
+              )
+              assert (tmp_dir / 'model.joblib').exists()
+              print('smoke-train OK, winner:', metrics['winner'])
+          "

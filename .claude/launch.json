@@ -1,0 +1,19 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "bank-copilot-gradio",
+      "runtimeExecutable": ".venv/bin/python",
+      "runtimeArgs": ["app.py"],
+      "port": 7861,
+      "autoPort": true
+    },
+    {
+      "name": "bank-copilot-streamlit",
+      "runtimeExecutable": ".venv/bin/streamlit",
+      "runtimeArgs": ["run", "streamlit_app.py"],
+      "port": 8502,
+      "autoPort": true
+    }
+  ]
+}

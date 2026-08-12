@@ -1,6 +1,7 @@
 """MetricSet fields are constructed with explicit keywords everywhere in
 this codebase (Trap 3) so a missing field surfaces at the call site, not
 deep inside a training run."""
+
 import numpy as np
 import pytest
 

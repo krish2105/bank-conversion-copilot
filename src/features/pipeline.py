@@ -36,7 +36,7 @@ class LeakageGuard(BaseEstimator, TransformerMixin):
     that forgets to) hits this instead of silently training a leaky model.
     """
 
-    def fit(self, x: pd.DataFrame, y: pd.Series | None = None) -> "LeakageGuard":
+    def fit(self, x: pd.DataFrame, y: pd.Series | None = None) -> LeakageGuard:
         return self
 
     def transform(self, x: pd.DataFrame) -> pd.DataFrame:
@@ -55,7 +55,7 @@ class DomainFeatureBuilder(BaseEstimator, TransformerMixin):
     becoming a spurious unseen category.
     """
 
-    def fit(self, x: pd.DataFrame, y: pd.Series | None = None) -> "DomainFeatureBuilder":
+    def fit(self, x: pd.DataFrame, y: pd.Series | None = None) -> DomainFeatureBuilder:
         return self
 
     def transform(self, x: pd.DataFrame) -> pd.DataFrame:
@@ -69,9 +69,9 @@ class DomainFeatureBuilder(BaseEstimator, TransformerMixin):
         out[config.FEATURE_NEVER_CONTACTED] = sentinel_mask.astype(int)
         out.loc[sentinel_mask, "pdays"] = np.nan
 
-        unknown_mask = pd.DataFrame({
-            column: out[column] == "unknown" for column in config.UNKNOWN_MARKER_COLUMNS
-        })
+        unknown_mask = pd.DataFrame(
+            {column: out[column] == "unknown" for column in config.UNKNOWN_MARKER_COLUMNS}
+        )
         out[config.FEATURE_N_UNKNOWN] = unknown_mask.sum(axis=1)
 
         out[config.FEATURE_CONTACT_INTENSITY] = out["campaign"] / (out["previous"] + 1)
@@ -86,21 +86,25 @@ class DomainFeatureBuilder(BaseEstimator, TransformerMixin):
 def build_feature_pipeline(scale_numeric: bool) -> Pipeline:
     numeric_features = list(NUMERIC_COLUMNS) + list(config.ENGINEERED_FEATURES)
 
-    numeric_steps: list[tuple[str, object]] = [("imputer", SimpleImputer(strategy="median"))]
+    numeric_steps: list[tuple[str, object]] = [
+        ("imputer", SimpleImputer(strategy="median"))
+    ]
     if scale_numeric:
         numeric_steps.append(("scaler", StandardScaler()))
     numeric_pipeline = Pipeline(numeric_steps)
 
-    categorical_pipeline = Pipeline([
-        (
-            "onehot",
-            OneHotEncoder(
-                handle_unknown="infrequent_if_exist",
-                min_frequency=20,
-                sparse_output=False,
+    categorical_pipeline = Pipeline(
+        [
+            (
+                "onehot",
+                OneHotEncoder(
+                    handle_unknown="infrequent_if_exist",
+                    min_frequency=20,
+                    sparse_output=False,
+                ),
             ),
-        ),
-    ])
+        ]
+    )
 
     columns = ColumnTransformer(
         transformers=[
@@ -111,11 +115,13 @@ def build_feature_pipeline(scale_numeric: bool) -> Pipeline:
         verbose_feature_names_out=False,
     )
 
-    return Pipeline([
-        ("leakage_guard", LeakageGuard()),
-        ("domain_features", DomainFeatureBuilder()),
-        ("columns", columns),
-    ])
+    return Pipeline(
+        [
+            ("leakage_guard", LeakageGuard()),
+            ("domain_features", DomainFeatureBuilder()),
+            ("columns", columns),
+        ]
+    )
 
 
 def get_feature_names(pipeline: Pipeline) -> list[str]:

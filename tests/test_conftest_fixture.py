@@ -1,10 +1,13 @@
 """The fixture must be structurally faithful: same columns/dtypes/sentinels
 as the real dataset, without mimicking its statistics."""
+
 from src import config
 
 
 def test_columns_match_raw_schema(synthetic_frame):
-    assert set(synthetic_frame.columns) == set(config.RAW_INPUT_COLUMNS) | {config.TARGET_COLUMN}
+    assert set(synthetic_frame.columns) == set(config.RAW_INPUT_COLUMNS) | {
+        config.TARGET_COLUMN
+    }
 
 
 def test_no_nulls_but_unknown_markers_present(synthetic_frame):
@@ -35,7 +38,10 @@ def test_contains_exact_duplicates(synthetic_frame):
 
 def test_signal_is_learnable_but_weak(synthetic_frame):
     success_rate = (
-        synthetic_frame.loc[synthetic_frame["poutcome"] == "success", config.TARGET_COLUMN] == "yes"
+        synthetic_frame.loc[
+            synthetic_frame["poutcome"] == "success", config.TARGET_COLUMN
+        ]
+        == "yes"
     ).mean()
     overall_rate = (synthetic_frame[config.TARGET_COLUMN] == "yes").mean()
     assert success_rate > overall_rate

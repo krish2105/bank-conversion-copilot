@@ -1,0 +1,30 @@
+name: File size guard
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  check-file-sizes:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fail if any non-LFS file over 10 MB was added or changed in this PR
+        run: |
+          git lfs ls-files -n > /tmp/lfs_files.txt || true
+          over_limit=0
+          while IFS= read -r file; do
+            if [ -f "$file" ] && ! grep -qxF "$file" /tmp/lfs_files.txt; then
+              size=$(stat -c%s "$file" 2>/dev/null || stat -f%z "$file")
+              if [ "$size" -gt 10485760 ]; then
+                echo "::error file=$file::$file is $((size / 1024 / 1024)) MB and not tracked by Git LFS (10 MB limit)."
+                over_limit=1
+              fi
+            fi
+          done < <(git diff --name-only --diff-filter=ACM "origin/${{ github.base_ref }}"...HEAD)
+          exit $over_limit

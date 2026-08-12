@@ -5,8 +5,8 @@ constrained free-tier container."""
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import Sequence
 
 import numpy as np
 import pandas as pd
@@ -34,7 +34,9 @@ def compute_reference_bins(reference: np.ndarray, n_bins: int = 10) -> np.ndarra
     return edges
 
 
-def population_stability_index(reference: np.ndarray, current: np.ndarray, n_bins: int = 10) -> float:
+def population_stability_index(
+    reference: np.ndarray, current: np.ndarray, n_bins: int = 10
+) -> float:
     reference = np.asarray(reference, dtype=float)
     current = np.asarray(current, dtype=float)
     edges = compute_reference_bins(reference, n_bins=n_bins)
@@ -48,7 +50,9 @@ def population_stability_index(reference: np.ndarray, current: np.ndarray, n_bin
     return float(np.sum((cur_pct - ref_pct) * np.log(cur_pct / ref_pct)))
 
 
-def jensen_shannon_categorical(reference: pd.Series, current: pd.Series, base: float = 2.0) -> float:
+def jensen_shannon_categorical(
+    reference: pd.Series, current: pd.Series, base: float = 2.0
+) -> float:
     """Symmetric, bounded [0,1], well-behaved when a level is absent from
     one side entirely -- unlike plain KL divergence, which blows up there."""
     categories = sorted(set(reference.unique()) | set(current.unique()))
@@ -102,4 +106,6 @@ def compute_drift_report(
     else:
         verdict = "STABLE"
 
-    return DriftReport(numeric_psi=numeric_psi, categorical_js=categorical_js, verdict=verdict)
+    return DriftReport(
+        numeric_psi=numeric_psi, categorical_js=categorical_js, verdict=verdict
+    )

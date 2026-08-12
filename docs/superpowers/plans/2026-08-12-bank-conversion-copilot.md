@@ -254,6 +254,7 @@ git push -u origin main
 ```python
 # tests/test_config.py
 """Config is the single source of truth; these tests pin its public contract."""
+
 import numpy as np
 
 from src import config
@@ -275,10 +276,25 @@ def test_field_specs_exclude_duration_and_count_19():
 
 def test_field_specs_cover_all_expected_columns():
     expected = {
-        "age", "job", "marital", "education", "default", "housing", "loan",
-        "contact", "month", "day_of_week", "campaign", "pdays", "previous",
-        "poutcome", "emp.var.rate", "cons.price.idx", "cons.conf.idx",
-        "euribor3m", "nr.employed",
+        "age",
+        "job",
+        "marital",
+        "education",
+        "default",
+        "housing",
+        "loan",
+        "contact",
+        "month",
+        "day_of_week",
+        "campaign",
+        "pdays",
+        "previous",
+        "poutcome",
+        "emp.var.rate",
+        "cons.price.idx",
+        "cons.conf.idx",
+        "euribor3m",
+        "nr.employed",
     }
     assert {f.name for f in config.FIELD_SPECS} == expected
 
@@ -299,7 +315,9 @@ def test_cost_matrix_breakeven():
 
 
 def test_cost_matrix_net_value_all_called_vs_none_called():
-    cm = config.CostMatrix(cost_per_call=8.0, revenue_per_subscription=120.0, cost_of_missed_customer=0.0)
+    cm = config.CostMatrix(
+        cost_per_call=8.0, revenue_per_subscription=120.0, cost_of_missed_customer=0.0
+    )
     probs = np.array([0.9, 0.9, 0.01, 0.01])
     call_high_conf_only = cm.net_value(probs, threshold=0.5)
     call_everyone = cm.net_value(probs, threshold=0.0)
@@ -316,7 +334,12 @@ def test_month_order_and_unknown_columns():
     assert config.MONTH_ORDER[0] == "jan" and config.MONTH_ORDER[-1] == "dec"
     assert len(config.MONTH_ORDER) == 12
     assert set(config.UNKNOWN_MARKER_COLUMNS) == {
-        "job", "marital", "education", "default", "housing", "loan",
+        "job",
+        "marital",
+        "education",
+        "default",
+        "housing",
+        "loan",
     }
     assert config.PDAYS_SENTINEL == 999
 ```
@@ -369,10 +392,26 @@ TARGET_COLUMN = "y"
 POSITIVE_LABEL = "yes"
 
 RAW_INPUT_COLUMNS: tuple[str, ...] = (
-    "age", "job", "marital", "education", "default", "housing", "loan",
-    "contact", "month", "day_of_week", "duration", "campaign", "pdays",
-    "previous", "poutcome", "emp.var.rate", "cons.price.idx",
-    "cons.conf.idx", "euribor3m", "nr.employed",
+    "age",
+    "job",
+    "marital",
+    "education",
+    "default",
+    "housing",
+    "loan",
+    "contact",
+    "month",
+    "day_of_week",
+    "duration",
+    "campaign",
+    "pdays",
+    "previous",
+    "poutcome",
+    "emp.var.rate",
+    "cons.price.idx",
+    "cons.conf.idx",
+    "euribor3m",
+    "nr.employed",
 )
 
 # --- Leakage control ------------------------------------------------------
@@ -388,7 +427,12 @@ LEAKAGE_REASONS: dict[str, str] = {
 
 # --- Missing-value handling -------------------------------------------
 UNKNOWN_MARKER_COLUMNS: tuple[str, ...] = (
-    "job", "marital", "education", "default", "housing", "loan",
+    "job",
+    "marital",
+    "education",
+    "default",
+    "housing",
+    "loan",
 )
 PDAYS_SENTINEL = 999
 
@@ -397,18 +441,31 @@ FEATURE_NEVER_CONTACTED = "never_contacted_before"
 FEATURE_N_UNKNOWN = "n_unknown_fields"
 FEATURE_CONTACT_INTENSITY = "contact_intensity"
 ENGINEERED_FEATURES: tuple[str, ...] = (
-    FEATURE_NEVER_CONTACTED, FEATURE_N_UNKNOWN, FEATURE_CONTACT_INTENSITY,
+    FEATURE_NEVER_CONTACTED,
+    FEATURE_N_UNKNOWN,
+    FEATURE_CONTACT_INTENSITY,
 )
 
 # --- Temporal split -------------------------------------------------------
 MONTH_ORDER: tuple[str, ...] = (
-    "jan", "feb", "mar", "apr", "may", "jun",
-    "jul", "aug", "sep", "oct", "nov", "dec",
+    "jan",
+    "feb",
+    "mar",
+    "apr",
+    "may",
+    "jun",
+    "jul",
+    "aug",
+    "sep",
+    "oct",
+    "nov",
+    "dec",
 )
 BASE_YEAR = 2008
 TRAIN_FRACTION = 0.70
 VALID_FRACTION = 0.15
 TEST_FRACTION = 0.15
+
 
 # --- Cost matrix ------------------------------------------------------
 @dataclass(frozen=True)
@@ -430,13 +487,16 @@ class CostMatrix:
     def net_value(self, probabilities: np.ndarray, threshold: float) -> float:
         probabilities = np.asarray(probabilities, dtype=float)
         call_mask = probabilities >= threshold
-        called = probabilities[call_mask] * self.revenue_per_subscription - self.cost_per_call
+        called = (
+            probabilities[call_mask] * self.revenue_per_subscription - self.cost_per_call
+        )
         skipped = -probabilities[~call_mask] * self.cost_of_missed_customer
         return float(np.sum(called) + np.sum(skipped))
 
 
 DEFAULT_COST_MATRIX = CostMatrix()
 SELECTION_METRIC = "average_precision"
+
 
 # --- App field specs (19 = 20 raw inputs minus duration) -------------------
 @dataclass(frozen=True)
@@ -455,77 +515,171 @@ class FieldSpec:
 FIELD_SPECS: tuple[FieldSpec, ...] = (
     FieldSpec("age", "numeric", 40, "Age", min_value=18, max_value=95, step=1),
     FieldSpec(
-        "job", "categorical", "admin.", "Job",
+        "job",
+        "categorical",
+        "admin.",
+        "Job",
         levels=(
-            "admin.", "blue-collar", "entrepreneur", "housemaid", "management",
-            "retired", "self-employed", "services", "student", "technician",
-            "unemployed", "unknown",
+            "admin.",
+            "blue-collar",
+            "entrepreneur",
+            "housemaid",
+            "management",
+            "retired",
+            "self-employed",
+            "services",
+            "student",
+            "technician",
+            "unemployed",
+            "unknown",
         ),
     ),
     FieldSpec(
-        "marital", "categorical", "married", "Marital status",
+        "marital",
+        "categorical",
+        "married",
+        "Marital status",
         levels=("divorced", "married", "single", "unknown"),
     ),
     FieldSpec(
-        "education", "categorical", "university.degree", "Education",
+        "education",
+        "categorical",
+        "university.degree",
+        "Education",
         levels=(
-            "basic.4y", "basic.6y", "basic.9y", "high.school", "illiterate",
-            "professional.course", "university.degree", "unknown",
+            "basic.4y",
+            "basic.6y",
+            "basic.9y",
+            "high.school",
+            "illiterate",
+            "professional.course",
+            "university.degree",
+            "unknown",
         ),
     ),
-    FieldSpec("default", "categorical", "no", "Has credit in default?", levels=("no", "yes", "unknown")),
-    FieldSpec("housing", "categorical", "yes", "Has housing loan?", levels=("no", "yes", "unknown")),
-    FieldSpec("loan", "categorical", "no", "Has personal loan?", levels=("no", "yes", "unknown")),
-    FieldSpec("contact", "categorical", "cellular", "Contact type", levels=("cellular", "telephone")),
     FieldSpec(
-        "month", "categorical", "may", "Last contact month",
+        "default",
+        "categorical",
+        "no",
+        "Has credit in default?",
+        levels=("no", "yes", "unknown"),
+    ),
+    FieldSpec(
+        "housing",
+        "categorical",
+        "yes",
+        "Has housing loan?",
+        levels=("no", "yes", "unknown"),
+    ),
+    FieldSpec(
+        "loan", "categorical", "no", "Has personal loan?", levels=("no", "yes", "unknown")
+    ),
+    FieldSpec(
+        "contact",
+        "categorical",
+        "cellular",
+        "Contact type",
+        levels=("cellular", "telephone"),
+    ),
+    FieldSpec(
+        "month",
+        "categorical",
+        "may",
+        "Last contact month",
         levels=("mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"),
     ),
     FieldSpec(
-        "day_of_week", "categorical", "mon", "Last contact day of week",
+        "day_of_week",
+        "categorical",
+        "mon",
+        "Last contact day of week",
         levels=("mon", "tue", "wed", "thu", "fri"),
     ),
     FieldSpec(
-        "campaign", "numeric", 2, "Contacts this campaign",
+        "campaign",
+        "numeric",
+        2,
+        "Contacts this campaign",
         help_text="Number of contacts for this client during this campaign, including the current one.",
-        min_value=1, max_value=50, step=1,
+        min_value=1,
+        max_value=50,
+        step=1,
     ),
     FieldSpec(
-        "pdays", "numeric", 999, "Days since previous contact",
+        "pdays",
+        "numeric",
+        999,
+        "Days since previous contact",
         help_text="999 means never previously contacted.",
-        min_value=0, max_value=999, step=1,
+        min_value=0,
+        max_value=999,
+        step=1,
     ),
     FieldSpec(
-        "previous", "numeric", 0, "Prior contacts",
+        "previous",
+        "numeric",
+        0,
+        "Prior contacts",
         help_text="Number of contacts before this campaign for this client.",
-        min_value=0, max_value=10, step=1,
+        min_value=0,
+        max_value=10,
+        step=1,
     ),
     FieldSpec(
-        "poutcome", "categorical", "nonexistent", "Previous campaign outcome",
+        "poutcome",
+        "categorical",
+        "nonexistent",
+        "Previous campaign outcome",
         levels=("failure", "nonexistent", "success"),
     ),
     FieldSpec(
-        "emp.var.rate", "numeric", 1.1, "Employment variation rate",
-        min_value=-3.4, max_value=1.4, step=0.1,
+        "emp.var.rate",
+        "numeric",
+        1.1,
+        "Employment variation rate",
+        min_value=-3.4,
+        max_value=1.4,
+        step=0.1,
     ),
     FieldSpec(
-        "cons.price.idx", "numeric", 93.994, "Consumer price index",
-        min_value=92.0, max_value=95.0, step=0.01,
+        "cons.price.idx",
+        "numeric",
+        93.994,
+        "Consumer price index",
+        min_value=92.0,
+        max_value=95.0,
+        step=0.01,
     ),
     FieldSpec(
-        "cons.conf.idx", "numeric", -36.4, "Consumer confidence index",
-        min_value=-51.0, max_value=-26.0, step=0.1,
+        "cons.conf.idx",
+        "numeric",
+        -36.4,
+        "Consumer confidence index",
+        min_value=-51.0,
+        max_value=-26.0,
+        step=0.1,
     ),
     FieldSpec(
-        "euribor3m", "numeric", 4.857, "Euribor 3-month rate",
-        min_value=0.6, max_value=5.1, step=0.001,
+        "euribor3m",
+        "numeric",
+        4.857,
+        "Euribor 3-month rate",
+        min_value=0.6,
+        max_value=5.1,
+        step=0.001,
     ),
     FieldSpec(
-        "nr.employed", "numeric", 5191.0, "Number employed (macro index)",
-        min_value=4950.0, max_value=5230.0, step=1.0,
+        "nr.employed",
+        "numeric",
+        5191.0,
+        "Number employed (macro index)",
+        min_value=4950.0,
+        max_value=5230.0,
+        step=1.0,
     ),
 )
 APP_FIELD_ORDER: tuple[str, ...] = tuple(f.name for f in FIELD_SPECS)
+
 
 # --- Branding / runtime -------------------------------------------------
 @dataclass(frozen=True)
@@ -588,11 +742,14 @@ git push
 # tests/test_conftest_fixture.py
 """The fixture must be structurally faithful: same columns/dtypes/sentinels
 as the real dataset, without mimicking its statistics."""
+
 from src import config
 
 
 def test_columns_match_raw_schema(synthetic_frame):
-    assert set(synthetic_frame.columns) == set(config.RAW_INPUT_COLUMNS) | {config.TARGET_COLUMN}
+    assert set(synthetic_frame.columns) == set(config.RAW_INPUT_COLUMNS) | {
+        config.TARGET_COLUMN
+    }
 
 
 def test_no_nulls_but_unknown_markers_present(synthetic_frame):
@@ -624,7 +781,10 @@ def test_contains_exact_duplicates(synthetic_frame):
 def test_signal_is_learnable_but_weak(synthetic_frame):
     # poutcome == success should correlate with y == yes, but not perfectly
     success_rate = (
-        synthetic_frame.loc[synthetic_frame["poutcome"] == "success", config.TARGET_COLUMN] == "yes"
+        synthetic_frame.loc[
+            synthetic_frame["poutcome"] == "success", config.TARGET_COLUMN
+        ]
+        == "yes"
     ).mean()
     overall_rate = (synthetic_frame[config.TARGET_COLUMN] == "yes").mean()
     assert success_rate > overall_rate
@@ -670,14 +830,32 @@ def make_synthetic_bank_frame(n_per_month: int = 300, seed: int = 42) -> pd.Data
 
     day_of_week = rng.choice(["mon", "tue", "wed", "thu", "fri"], size=n)
     job = rng.choice(
-        ["admin.", "blue-collar", "technician", "services", "management",
-         "retired", "student", "unknown"],
-        size=n, p=[0.22, 0.20, 0.15, 0.12, 0.10, 0.08, 0.05, 0.08],
+        [
+            "admin.",
+            "blue-collar",
+            "technician",
+            "services",
+            "management",
+            "retired",
+            "student",
+            "unknown",
+        ],
+        size=n,
+        p=[0.22, 0.20, 0.15, 0.12, 0.10, 0.08, 0.05, 0.08],
     )
-    marital = rng.choice(["married", "single", "divorced", "unknown"], size=n, p=[0.55, 0.28, 0.14, 0.03])
+    marital = rng.choice(
+        ["married", "single", "divorced", "unknown"], size=n, p=[0.55, 0.28, 0.14, 0.03]
+    )
     education = rng.choice(
-        ["university.degree", "high.school", "basic.9y", "professional.course", "unknown"],
-        size=n, p=[0.30, 0.25, 0.20, 0.15, 0.10],
+        [
+            "university.degree",
+            "high.school",
+            "basic.9y",
+            "professional.course",
+            "unknown",
+        ],
+        size=n,
+        p=[0.30, 0.25, 0.20, 0.15, 0.10],
     )
     default = rng.choice(["no", "unknown", "yes"], size=n, p=[0.78, 0.20, 0.02])
     housing = rng.choice(["yes", "no", "unknown"], size=n, p=[0.52, 0.44, 0.04])
@@ -691,11 +869,19 @@ def make_synthetic_bank_frame(n_per_month: int = 300, seed: int = 42) -> pd.Data
     pdays = np.where(never_contacted, config.PDAYS_SENTINEL, rng.integers(1, 27, size=n))
     previous = np.where(never_contacted, 0, rng.integers(1, 4, size=n))
     poutcome = np.where(
-        never_contacted, "nonexistent",
+        never_contacted,
+        "nonexistent",
         rng.choice(["failure", "success"], size=n, p=[0.7, 0.3]),
     )
 
-    month_to_rate = {"oct": -1.0, "nov": -1.5, "dec": -2.0, "mar": -1.8, "apr": -1.2, "may": 1.1}
+    month_to_rate = {
+        "oct": -1.0,
+        "nov": -1.5,
+        "dec": -2.0,
+        "mar": -1.8,
+        "apr": -1.2,
+        "may": 1.1,
+    }
     emp_var_rate = np.array([month_to_rate[m] for m in months]) + rng.normal(0, 0.05, n)
     cons_price_idx = 93.0 + rng.normal(0, 0.3, n)
     cons_conf_idx = -40.0 + rng.normal(0, 3.0, n)
@@ -719,15 +905,31 @@ def make_synthetic_bank_frame(n_per_month: int = 300, seed: int = 42) -> pd.Data
         flip_down = (y == "yes") & (rng.random(n) < (1 - 0.11 / positive_rate))
         y = np.where(flip_down, "no", y)
 
-    frame = pd.DataFrame({
-        "age": age, "job": job, "marital": marital, "education": education,
-        "default": default, "housing": housing, "loan": loan, "contact": contact,
-        "month": months, "day_of_week": day_of_week, "duration": duration,
-        "campaign": campaign, "pdays": pdays, "previous": previous,
-        "poutcome": poutcome, "emp.var.rate": emp_var_rate,
-        "cons.price.idx": cons_price_idx, "cons.conf.idx": cons_conf_idx,
-        "euribor3m": euribor3m, "nr.employed": nr_employed, "y": y,
-    })
+    frame = pd.DataFrame(
+        {
+            "age": age,
+            "job": job,
+            "marital": marital,
+            "education": education,
+            "default": default,
+            "housing": housing,
+            "loan": loan,
+            "contact": contact,
+            "month": months,
+            "day_of_week": day_of_week,
+            "duration": duration,
+            "campaign": campaign,
+            "pdays": pdays,
+            "previous": previous,
+            "poutcome": poutcome,
+            "emp.var.rate": emp_var_rate,
+            "cons.price.idx": cons_price_idx,
+            "cons.conf.idx": cons_conf_idx,
+            "euribor3m": euribor3m,
+            "nr.employed": nr_employed,
+            "y": y,
+        }
+    )
 
     duplicates = frame.iloc[[5, n // 2, n - 5]].copy()
     return pd.concat([frame, duplicates], ignore_index=True)
@@ -786,6 +988,7 @@ git push
 # tests/test_leakage.py
 """The most valuable tests in the repo: prove the model cannot see the
 future (duration) and cannot see across a split boundary (temporal split)."""
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -818,8 +1021,8 @@ def test_temporal_split_disjoint_ordered_exhaustive(synthetic_frame):
     train, valid, test = loader.temporal_split(synthetic_frame, periods)
     assert len(train) + len(valid) + len(test) == len(synthetic_frame)
     train_periods = set(periods.iloc[: len(train)])
-    valid_periods = set(periods.iloc[len(train): len(train) + len(valid)])
-    test_periods = set(periods.iloc[len(train) + len(valid):])
+    valid_periods = set(periods.iloc[len(train) : len(train) + len(valid)])
+    test_periods = set(periods.iloc[len(train) + len(valid) :])
     assert train_periods.isdisjoint(valid_periods)
     assert valid_periods.isdisjoint(test_periods)
     assert train_periods.isdisjoint(test_periods)
@@ -841,7 +1044,9 @@ def test_quality_audit_counts(synthetic_frame):
     assert audit.n_rows == len(synthetic_frame)
     assert audit.n_duplicate_rows >= 2
     for column in config.UNKNOWN_MARKER_COLUMNS:
-        assert audit.unknown_counts[column] == int((synthetic_frame[column] == "unknown").sum())
+        assert audit.unknown_counts[column] == int(
+            (synthetic_frame[column] == "unknown").sum()
+        )
     assert 0.0 < audit.pdays_sentinel_share < 1.0
 
 
@@ -991,7 +1196,9 @@ def temporal_split(
         return int(boundaries[np.argmin(np.abs(boundaries - target))])
 
     train_end = snap(int(n * config.TRAIN_FRACTION))
-    valid_end = max(train_end, snap(int(n * (config.TRAIN_FRACTION + config.VALID_FRACTION))))
+    valid_end = max(
+        train_end, snap(int(n * (config.TRAIN_FRACTION + config.VALID_FRACTION)))
+    )
 
     return frame.iloc[:train_end], frame.iloc[train_end:valid_end], frame.iloc[valid_end:]
 
@@ -1003,7 +1210,9 @@ def split_xy(frame: pd.DataFrame) -> tuple[pd.DataFrame, pd.Series]:
     feature pipeline in src/features/pipeline.py) — belt and braces.
     """
     y = (frame[config.TARGET_COLUMN] == config.POSITIVE_LABEL).astype(int)
-    x = frame.drop(columns=[config.TARGET_COLUMN, *config.LEAKAGE_DENYLIST], errors="ignore")
+    x = frame.drop(
+        columns=[config.TARGET_COLUMN, *config.LEAKAGE_DENYLIST], errors="ignore"
+    )
     return x, y
 
 
@@ -1059,6 +1268,7 @@ git push
 # tests/test_pipeline.py
 """Feature engineering happens entirely inside the sklearn Pipeline so
 serving and training can never disagree about how a value was derived."""
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -1073,17 +1283,19 @@ from src.features.pipeline import (
 
 
 def test_domain_feature_builder_sentinel_flag_and_nan():
-    frame = pd.DataFrame({
-        "pdays": [999, 5, 999, 12],
-        "campaign": [1, 2, 3, 4],
-        "previous": [0, 1, 0, 2],
-        "job": ["admin.", "  RETIRED  ", "unknown", "student"],
-        "marital": ["married", "single", "unknown", "single"],
-        "education": ["high.school", "unknown", "unknown", "basic.9y"],
-        "default": ["no", "no", "unknown", "no"],
-        "housing": ["yes", "no", "unknown", "yes"],
-        "loan": ["no", "no", "unknown", "no"],
-    })
+    frame = pd.DataFrame(
+        {
+            "pdays": [999, 5, 999, 12],
+            "campaign": [1, 2, 3, 4],
+            "previous": [0, 1, 0, 2],
+            "job": ["admin.", "  RETIRED  ", "unknown", "student"],
+            "marital": ["married", "single", "unknown", "single"],
+            "education": ["high.school", "unknown", "unknown", "basic.9y"],
+            "default": ["no", "no", "unknown", "no"],
+            "housing": ["yes", "no", "unknown", "yes"],
+            "loan": ["no", "no", "unknown", "no"],
+        }
+    )
     out = DomainFeatureBuilder().fit_transform(frame)
     assert list(out[config.FEATURE_NEVER_CONTACTED]) == [1, 0, 1, 0]
     assert out["pdays"].iloc[0] != out["pdays"].iloc[0]  # NaN
@@ -1092,29 +1304,46 @@ def test_domain_feature_builder_sentinel_flag_and_nan():
 
 
 def test_domain_feature_builder_unknown_count_exact():
-    frame = pd.DataFrame({
-        "pdays": [999], "campaign": [1], "previous": [0],
-        "job": ["unknown"], "marital": ["unknown"], "education": ["unknown"],
-        "default": ["no"], "housing": ["yes"], "loan": ["no"],
-    })
+    frame = pd.DataFrame(
+        {
+            "pdays": [999],
+            "campaign": [1],
+            "previous": [0],
+            "job": ["unknown"],
+            "marital": ["unknown"],
+            "education": ["unknown"],
+            "default": ["no"],
+            "housing": ["yes"],
+            "loan": ["no"],
+        }
+    )
     out = DomainFeatureBuilder().fit_transform(frame)
     assert out[config.FEATURE_N_UNKNOWN].iloc[0] == 3
 
 
 def test_domain_feature_builder_contact_intensity_exact():
-    frame = pd.DataFrame({
-        "pdays": [999, 5], "campaign": [10, 4], "previous": [4, 1],
-        "job": ["admin.", "admin."], "marital": ["married", "married"],
-        "education": ["high.school", "high.school"], "default": ["no", "no"],
-        "housing": ["yes", "yes"], "loan": ["no", "no"],
-    })
+    frame = pd.DataFrame(
+        {
+            "pdays": [999, 5],
+            "campaign": [10, 4],
+            "previous": [4, 1],
+            "job": ["admin.", "admin."],
+            "marital": ["married", "married"],
+            "education": ["high.school", "high.school"],
+            "default": ["no", "no"],
+            "housing": ["yes", "yes"],
+            "loan": ["no", "no"],
+        }
+    )
     out = DomainFeatureBuilder().fit_transform(frame)
     assert out[config.FEATURE_CONTACT_INTENSITY].iloc[0] == pytest.approx(10 / 5)
     assert out[config.FEATURE_CONTACT_INTENSITY].iloc[1] == pytest.approx(4 / 2)
 
 
 @pytest.mark.parametrize("scale_numeric", [True, False])
-def test_pipeline_output_dense_finite_and_names_match_width(synthetic_frame, scale_numeric):
+def test_pipeline_output_dense_finite_and_names_match_width(
+    synthetic_frame, scale_numeric
+):
     x, _ = split_xy(synthetic_frame)
     pipeline = build_feature_pipeline(scale_numeric=scale_numeric)
     transformed = pipeline.fit_transform(x)
@@ -1238,9 +1467,9 @@ class DomainFeatureBuilder(BaseEstimator, TransformerMixin):
         out[config.FEATURE_NEVER_CONTACTED] = sentinel_mask.astype(int)
         out.loc[sentinel_mask, "pdays"] = np.nan
 
-        unknown_mask = pd.DataFrame({
-            column: out[column] == "unknown" for column in config.UNKNOWN_MARKER_COLUMNS
-        })
+        unknown_mask = pd.DataFrame(
+            {column: out[column] == "unknown" for column in config.UNKNOWN_MARKER_COLUMNS}
+        )
         out[config.FEATURE_N_UNKNOWN] = unknown_mask.sum(axis=1)
 
         out[config.FEATURE_CONTACT_INTENSITY] = out["campaign"] / (out["previous"] + 1)
@@ -1255,21 +1484,25 @@ class DomainFeatureBuilder(BaseEstimator, TransformerMixin):
 def build_feature_pipeline(scale_numeric: bool) -> Pipeline:
     numeric_features = list(NUMERIC_COLUMNS) + list(config.ENGINEERED_FEATURES)
 
-    numeric_steps: list[tuple[str, object]] = [("imputer", SimpleImputer(strategy="median"))]
+    numeric_steps: list[tuple[str, object]] = [
+        ("imputer", SimpleImputer(strategy="median"))
+    ]
     if scale_numeric:
         numeric_steps.append(("scaler", StandardScaler()))
     numeric_pipeline = Pipeline(numeric_steps)
 
-    categorical_pipeline = Pipeline([
-        (
-            "onehot",
-            OneHotEncoder(
-                handle_unknown="infrequent_if_exist",
-                min_frequency=20,
-                sparse_output=False,
+    categorical_pipeline = Pipeline(
+        [
+            (
+                "onehot",
+                OneHotEncoder(
+                    handle_unknown="infrequent_if_exist",
+                    min_frequency=20,
+                    sparse_output=False,
+                ),
             ),
-        ),
-    ])
+        ]
+    )
 
     columns = ColumnTransformer(
         transformers=[
@@ -1280,11 +1513,13 @@ def build_feature_pipeline(scale_numeric: bool) -> Pipeline:
         verbose_feature_names_out=False,
     )
 
-    return Pipeline([
-        ("leakage_guard", LeakageGuard()),
-        ("domain_features", DomainFeatureBuilder()),
-        ("columns", columns),
-    ])
+    return Pipeline(
+        [
+            ("leakage_guard", LeakageGuard()),
+            ("domain_features", DomainFeatureBuilder()),
+            ("columns", columns),
+        ]
+    )
 
 
 def get_feature_names(pipeline: Pipeline) -> list[str]:
@@ -1325,6 +1560,7 @@ git push
 """MetricSet fields are constructed with explicit keywords everywhere in
 this codebase (Trap 3) so a missing field surfaces at the call site, not
 deep inside a training run."""
+
 import numpy as np
 import pytest
 
@@ -1462,7 +1698,9 @@ def compute_metrics(
     )
 
 
-def confusion_counts(y_true: np.ndarray, y_prob: np.ndarray, threshold: float) -> dict[str, int]:
+def confusion_counts(
+    y_true: np.ndarray, y_prob: np.ndarray, threshold: float
+) -> dict[str, int]:
     y_true = np.asarray(y_true)
     y_pred = (np.asarray(y_prob) >= threshold).astype(int)
     tp = int(np.sum((y_true == 1) & (y_pred == 1)))
@@ -1472,7 +1710,9 @@ def confusion_counts(y_true: np.ndarray, y_prob: np.ndarray, threshold: float) -
     return {"tp": tp, "fp": fp, "tn": tn, "fn": fn}
 
 
-def reliability_curve(y_true: np.ndarray, y_prob: np.ndarray, n_bins: int = 10) -> pd.DataFrame:
+def reliability_curve(
+    y_true: np.ndarray, y_prob: np.ndarray, n_bins: int = 10
+) -> pd.DataFrame:
     """Quantile-binned, not uniform: most predictions cluster below 0.2 on
     this dataset, and uniform bins would leave the upper bins empty."""
     frame = pd.DataFrame({"y_true": np.asarray(y_true), "y_prob": np.asarray(y_prob)})
@@ -1485,7 +1725,9 @@ def reliability_curve(y_true: np.ndarray, y_prob: np.ndarray, n_bins: int = 10) 
     return grouped.reset_index()
 
 
-def expected_calibration_error(y_true: np.ndarray, y_prob: np.ndarray, n_bins: int = 10) -> float:
+def expected_calibration_error(
+    y_true: np.ndarray, y_prob: np.ndarray, n_bins: int = 10
+) -> float:
     curve = reliability_curve(y_true, y_prob, n_bins=n_bins)
     weights = curve["count"] / curve["count"].sum()
     gaps = (curve["mean_predicted"] - curve["mean_observed"]).abs()
@@ -1495,7 +1737,9 @@ def expected_calibration_error(y_true: np.ndarray, y_prob: np.ndarray, n_bins: i
 def pr_curve_points(y_true: np.ndarray, y_prob: np.ndarray) -> pd.DataFrame:
     precision, recall, thresholds = precision_recall_curve(y_true, y_prob)
     thresholds = np.append(thresholds, 1.0)
-    return pd.DataFrame({"precision": precision, "recall": recall, "threshold": thresholds})
+    return pd.DataFrame(
+        {"precision": precision, "recall": recall, "threshold": thresholds}
+    )
 
 
 def roc_curve_points(y_true: np.ndarray, y_prob: np.ndarray) -> pd.DataFrame:
@@ -1538,6 +1782,7 @@ git push
 # tests/test_scoring.py
 """Threshold economics and (later in this file, Task 9) drift metrics —
 the two places a wrong number costs real money or masks real decay."""
+
 import numpy as np
 import pytest
 
@@ -1565,7 +1810,9 @@ def test_search_threshold_is_on_grid_and_beats_default_on_its_own_metric():
     y_true = rng.integers(0, 2, size=2000)
     y_prob = np.clip(y_true * 0.4 + rng.random(2000) * 0.3, 0, 1)
     cost_matrix = CostMatrix()
-    result = search_cost_optimal_threshold(y_true, y_prob, cost_matrix=cost_matrix, n_grid=201)
+    result = search_cost_optimal_threshold(
+        y_true, y_prob, cost_matrix=cost_matrix, n_grid=201
+    )
     assert isinstance(result, ThresholdResult)
     grid = np.linspace(0.0, 1.0, 201)
     assert np.isclose(grid, result.threshold).any()
@@ -1631,7 +1878,10 @@ def realized_net_value(
     call_mask = np.asarray(y_prob) >= threshold
     n_called = int(call_mask.sum())
     n_converted = int(y_true[call_mask].sum())
-    return n_converted * cost_matrix.revenue_per_subscription - n_called * cost_matrix.cost_per_call
+    return (
+        n_converted * cost_matrix.revenue_per_subscription
+        - n_called * cost_matrix.cost_per_call
+    )
 
 
 def search_cost_optimal_threshold(
@@ -1756,26 +2006,36 @@ def test_jensen_shannon_bounded_and_zero_for_identical():
 
 def test_compute_drift_report_verdict_stable_for_identical_frames():
     rng = np.random.default_rng(5)
-    frame = pd.DataFrame({
-        "num": rng.normal(0, 1, 1000),
-        "cat": rng.choice(["a", "b", "c"], size=1000),
-    })
-    report = compute_drift_report(frame, frame.copy(), numeric_columns=["num"], categorical_columns=["cat"])
+    frame = pd.DataFrame(
+        {
+            "num": rng.normal(0, 1, 1000),
+            "cat": rng.choice(["a", "b", "c"], size=1000),
+        }
+    )
+    report = compute_drift_report(
+        frame, frame.copy(), numeric_columns=["num"], categorical_columns=["cat"]
+    )
     assert isinstance(report, DriftReport)
     assert report.verdict == "STABLE"
 
 
 def test_compute_drift_report_verdict_flags_large_shift():
     rng = np.random.default_rng(6)
-    reference = pd.DataFrame({
-        "num": rng.normal(0, 1, 1000),
-        "cat": rng.choice(["a", "b", "c"], size=1000, p=[0.8, 0.1, 0.1]),
-    })
-    current = pd.DataFrame({
-        "num": rng.normal(6, 1, 1000),
-        "cat": rng.choice(["a", "b", "c"], size=1000, p=[0.1, 0.1, 0.8]),
-    })
-    report = compute_drift_report(reference, current, numeric_columns=["num"], categorical_columns=["cat"])
+    reference = pd.DataFrame(
+        {
+            "num": rng.normal(0, 1, 1000),
+            "cat": rng.choice(["a", "b", "c"], size=1000, p=[0.8, 0.1, 0.1]),
+        }
+    )
+    current = pd.DataFrame(
+        {
+            "num": rng.normal(6, 1, 1000),
+            "cat": rng.choice(["a", "b", "c"], size=1000, p=[0.1, 0.1, 0.8]),
+        }
+    )
+    report = compute_drift_report(
+        reference, current, numeric_columns=["num"], categorical_columns=["cat"]
+    )
     assert report.verdict in {"MONITOR", "RETRAIN RECOMMENDED"}
 ```
 
@@ -1823,7 +2083,9 @@ def compute_reference_bins(reference: np.ndarray, n_bins: int = 10) -> np.ndarra
     return edges
 
 
-def population_stability_index(reference: np.ndarray, current: np.ndarray, n_bins: int = 10) -> float:
+def population_stability_index(
+    reference: np.ndarray, current: np.ndarray, n_bins: int = 10
+) -> float:
     reference = np.asarray(reference, dtype=float)
     current = np.asarray(current, dtype=float)
     edges = compute_reference_bins(reference, n_bins=n_bins)
@@ -1837,7 +2099,9 @@ def population_stability_index(reference: np.ndarray, current: np.ndarray, n_bin
     return float(np.sum((cur_pct - ref_pct) * np.log(cur_pct / ref_pct)))
 
 
-def jensen_shannon_categorical(reference: pd.Series, current: pd.Series, base: float = 2.0) -> float:
+def jensen_shannon_categorical(
+    reference: pd.Series, current: pd.Series, base: float = 2.0
+) -> float:
     """Symmetric, bounded [0,1], well-behaved when a level is absent from
     one side entirely — unlike plain KL divergence, which blows up there."""
     categories = sorted(set(reference.unique()) | set(current.unique()))
@@ -1891,7 +2155,9 @@ def compute_drift_report(
     else:
         verdict = "STABLE"
 
-    return DriftReport(numeric_psi=numeric_psi, categorical_js=categorical_js, verdict=verdict)
+    return DriftReport(
+        numeric_psi=numeric_psi, categorical_js=categorical_js, verdict=verdict
+    )
 ```
 
 - [ ] **Step 4: Run tests to verify they pass**
@@ -1960,31 +2226,47 @@ from src.features.pipeline import (
     build_feature_pipeline,
     get_feature_names,
 )
-from src.models.evaluate import compute_metrics, expected_calibration_error, reliability_curve
+from src.models.evaluate import (
+    compute_metrics,
+    expected_calibration_error,
+    reliability_curve,
+)
 from src.models.threshold import search_cost_optimal_threshold
 from src.monitor.drift import compute_drift_report
 
 
 def _build_candidates() -> dict[str, object]:
     lr_pipeline = build_feature_pipeline(scale_numeric=True)
-    lr_pipeline.steps.append((
-        "classifier",
-        LogisticRegression(
-            C=1.0, class_weight="balanced", max_iter=2000, solver="lbfgs",
-            random_state=config.RUNTIME.random_state,
-        ),
-    ))
+    lr_pipeline.steps.append(
+        (
+            "classifier",
+            LogisticRegression(
+                C=1.0,
+                class_weight="balanced",
+                max_iter=2000,
+                solver="lbfgs",
+                random_state=config.RUNTIME.random_state,
+            ),
+        )
+    )
 
     hgb_pipeline = build_feature_pipeline(scale_numeric=False)
-    hgb_pipeline.steps.append((
-        "classifier",
-        HistGradientBoostingClassifier(
-            learning_rate=0.06, max_iter=400, max_leaf_nodes=31,
-            min_samples_leaf=40, l2_regularization=1.0, early_stopping=True,
-            validation_fraction=0.15, n_iter_no_change=30,
-            random_state=config.RUNTIME.random_state,
-        ),
-    ))
+    hgb_pipeline.steps.append(
+        (
+            "classifier",
+            HistGradientBoostingClassifier(
+                learning_rate=0.06,
+                max_iter=400,
+                max_leaf_nodes=31,
+                min_samples_leaf=40,
+                l2_regularization=1.0,
+                early_stopping=True,
+                validation_fraction=0.15,
+                n_iter_no_change=30,
+                random_state=config.RUNTIME.random_state,
+            ),
+        )
+    )
 
     return {"logistic_regression": lr_pipeline, "hist_gradient_boosting": hgb_pipeline}
 
@@ -2013,10 +2295,14 @@ def train_and_save(
     for name, pipeline in candidates.items():
         pipeline.fit(x_train, y_train)
         valid_probs = pipeline.predict_proba(x_valid)[:, 1]
-        validation_metrics[name] = compute_metrics(name, y_valid.to_numpy(), valid_probs, threshold=0.5)
+        validation_metrics[name] = compute_metrics(
+            name, y_valid.to_numpy(), valid_probs, threshold=0.5
+        )
         fitted[name] = pipeline
 
-    winner_name = max(validation_metrics, key=lambda n: validation_metrics[n].average_precision)
+    winner_name = max(
+        validation_metrics, key=lambda n: validation_metrics[n].average_precision
+    )
     winner = fitted[winner_name]
 
     # Isotonic calibration on VALIDATION via FrozenEstimator (sklearn>=1.8
@@ -2027,13 +2313,17 @@ def train_and_save(
 
     valid_calibrated_probs = calibrated.predict_proba(x_valid)[:, 1]
     threshold_result = search_cost_optimal_threshold(
-        y_valid.to_numpy(), valid_calibrated_probs, cost_matrix=config.DEFAULT_COST_MATRIX,
+        y_valid.to_numpy(),
+        valid_calibrated_probs,
+        cost_matrix=config.DEFAULT_COST_MATRIX,
     )
 
     # TEST is opened exactly once, here, at the end.
     test_probs = calibrated.predict_proba(x_test)[:, 1]
     test_metrics = compute_metrics(
-        f"{winner_name}_calibrated", y_test.to_numpy(), test_probs,
+        f"{winner_name}_calibrated",
+        y_test.to_numpy(),
+        test_probs,
         threshold=threshold_result.threshold,
     )
     majority_baseline_accuracy = float(max(y_test.mean(), 1 - y_test.mean()))
@@ -2041,7 +2331,10 @@ def train_and_save(
     reliability = reliability_curve(y_test.to_numpy(), test_probs)
 
     drift_report = compute_drift_report(
-        x_train, x_test, numeric_columns=NUMERIC_COLUMNS, categorical_columns=CATEGORICAL_COLUMNS,
+        x_train,
+        x_test,
+        numeric_columns=NUMERIC_COLUMNS,
+        categorical_columns=CATEGORICAL_COLUMNS,
     )
 
     # Global (not per-prediction) permutation importance on the winner's
@@ -2051,12 +2344,18 @@ def train_and_save(
     # a model type that might not support it (e.g. no feature_importances_
     # on HistGradientBoostingClassifier).
     perm_result = permutation_importance(
-        winner, x_valid, y_valid, scoring="average_precision",
-        n_repeats=5, random_state=config.RUNTIME.random_state, n_jobs=config.RUNTIME.n_jobs,
+        winner,
+        x_valid,
+        y_valid,
+        scoring="average_precision",
+        n_repeats=5,
+        random_state=config.RUNTIME.random_state,
+        n_jobs=config.RUNTIME.n_jobs,
     )
     global_importances = sorted(
         zip(x_valid.columns.tolist(), perm_result.importances_mean.tolist()),
-        key=lambda pair: pair[1], reverse=True,
+        key=lambda pair: pair[1],
+        reverse=True,
     )
 
     bundle = {
@@ -2081,7 +2380,8 @@ def train_and_save(
             "n_test": len(dataset.test),
         },
         "model_comparison": {
-            name: dataclasses.asdict(metric) for name, metric in validation_metrics.items()
+            name: dataclasses.asdict(metric)
+            for name, metric in validation_metrics.items()
         },
         "winner": winner_name,
         "calibration": {
@@ -2131,11 +2431,11 @@ def _render_model_card(metrics: dict, drift: dict) -> str:
 
 | Field | Value |
 |---|---|
-| Winner | {metrics['winner']} |
-| Trained at | {metrics['trained_at']} |
-| sklearn version | {metrics['sklearn_version']} |
+| Winner | {metrics["winner"]} |
+| Trained at | {metrics["trained_at"]} |
+| sklearn version | {metrics["sklearn_version"]} |
 | Selection metric | average_precision (PR-AUC) |
-| Decision threshold | {threshold['threshold']:.4f} |
+| Decision threshold | {threshold["threshold"]:.4f} |
 
 ## Intended use
 
@@ -2153,18 +2453,18 @@ credit risk, and this model was never validated for that purpose.
 |---|---|---|
 {comparison_rows}
 
-Test set (opened once): precision {test['precision']:.4f}, recall {test['recall']:.4f},
-average precision {test['average_precision']:.4f}, ROC-AUC {test['roc_auc']:.4f}.
-Accuracy is reported last, deliberately: {test['accuracy']:.4f} versus a
-majority-class baseline of {metrics['majority_baseline_accuracy']:.4f} —
+Test set (opened once): precision {test["precision"]:.4f}, recall {test["recall"]:.4f},
+average precision {test["average_precision"]:.4f}, ROC-AUC {test["roc_auc"]:.4f}.
+Accuracy is reported last, deliberately: {test["accuracy"]:.4f} versus a
+majority-class baseline of {metrics["majority_baseline_accuracy"]:.4f} —
 accuracy alone cannot distinguish this model from predicting "no" for
 everyone.
 
 ## Business framing
 
-Break-even call probability: {metrics['breakeven_probability']:.4f}.
-Chosen threshold yields a validation uplift of {threshold['uplift_vs_default']:.2f} EUR
-versus the naive 0.5 cutoff and {threshold['uplift_vs_call_everyone']:.2f} EUR
+Break-even call probability: {metrics["breakeven_probability"]:.4f}.
+Chosen threshold yields a validation uplift of {threshold["uplift_vs_default"]:.2f} EUR
+versus the naive 0.5 cutoff and {threshold["uplift_vs_call_everyone"]:.2f} EUR
 versus calling everyone.
 
 ## Leakage controls
@@ -2173,7 +2473,7 @@ versus calling everyone.
 
 ## Drift monitoring (train vs test)
 
-Verdict: **{drift['verdict']}**. See `artifacts/drift.json` for per-feature detail.
+Verdict: **{drift["verdict"]}**. See `artifacts/drift.json` for per-feature detail.
 
 ## Known limitations
 
@@ -2188,8 +2488,12 @@ Verdict: **{drift['verdict']}**. See `artifacts/drift.json` for per-feature deta
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Train the Bank Conversion Copilot model.")
-    parser.add_argument("--offline", action="store_true", help="Load from data/ instead of the network.")
+    parser = argparse.ArgumentParser(
+        description="Train the Bank Conversion Copilot model."
+    )
+    parser.add_argument(
+        "--offline", action="store_true", help="Load from data/ instead of the network."
+    )
     args = parser.parse_args()
 
     dataset = load_and_split(offline=args.offline)
@@ -2201,7 +2505,9 @@ def main() -> None:
     test = metrics["test_metrics"]
     print(f"Test AP: {test['average_precision']:.4f}  ROC-AUC: {test['roc_auc']:.4f}")
     threshold = metrics["threshold_search"]
-    print(f"Threshold: {threshold['threshold']:.4f}  (breakeven {metrics['breakeven_probability']:.4f})")
+    print(
+        f"Threshold: {threshold['threshold']:.4f}  (breakeven {metrics['breakeven_probability']:.4f})"
+    )
     print(f"Artifact size: {metrics['artifact_size_bytes'] / 1024:.1f} KB")
 
 
@@ -2277,6 +2583,7 @@ git push
 """Three-stage explainer: SHAP -> linear coefficients -> global permutation
 importance. Every stage after the first exists because a real deployed app
 must never crash trying to explain a prediction."""
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -2284,7 +2591,11 @@ from sklearn.calibration import CalibratedClassifierCV
 from sklearn.frozen import FrozenEstimator
 
 from src.data.loader import split_xy
-from src.explain.shap_engine import ExplanationResult, _normalize_shap_shape, explain_prediction
+from src.explain.shap_engine import (
+    ExplanationResult,
+    _normalize_shap_shape,
+    explain_prediction,
+)
 from src.features.pipeline import build_feature_pipeline, get_feature_names
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import HistGradientBoostingClassifier
@@ -2466,14 +2777,18 @@ def explain_prediction(bundle: dict, x_row: pd.DataFrame) -> ExplanationResult:
         shap_contribs = _try_shap(pipeline, transformed, feature_names)
         if shap_contribs is not None:
             return ExplanationResult(
-                method="shap", reliable=True, contributions=shap_contribs,
+                method="shap",
+                reliable=True,
+                contributions=shap_contribs,
                 note="Exact per-prediction SHAP contributions.",
             )
 
         linear_contribs = _try_linear(pipeline, transformed, feature_names)
         if linear_contribs is not None:
             return ExplanationResult(
-                method="linear_coefficients", reliable=True, contributions=linear_contribs,
+                method="linear_coefficients",
+                reliable=True,
+                contributions=linear_contribs,
                 note="Exact for the logistic model: coefficient x standardised value.",
             )
 
@@ -2528,8 +2843,19 @@ import numpy as np
 import pytest
 
 from src import config
-from src.data.loader import DatasetBundle, audit_quality, build_period_index, temporal_split
-from src.inference.predict import BatchResult, ScoreResult, load_bundle, score_batch, score_one
+from src.data.loader import (
+    DatasetBundle,
+    audit_quality,
+    build_period_index,
+    temporal_split,
+)
+from src.inference.predict import (
+    BatchResult,
+    ScoreResult,
+    load_bundle,
+    score_batch,
+    score_one,
+)
 from src.models.train import train_and_save
 
 
@@ -2577,9 +2903,13 @@ def test_end_to_end_score_batch_tolerant_ingestion(trained_bundle_path, syntheti
     assert any("duration" in w or "leaky" in w.lower() for w in batch.warnings)
 
 
-def test_score_batch_capacity_mode_hits_requested_share(trained_bundle_path, synthetic_frame):
+def test_score_batch_capacity_mode_hits_requested_share(
+    trained_bundle_path, synthetic_frame
+):
     bundle = load_bundle(model_path=trained_bundle_path)
-    batch = score_batch(bundle, synthetic_frame.drop(columns=["duration"]), capacity_fraction=0.10)
+    batch = score_batch(
+        bundle, synthetic_frame.drop(columns=["duration"]), capacity_fraction=0.10
+    )
     called_share = (batch.scored["verdict"] == "CALL").mean()
     assert called_share == pytest.approx(0.10, abs=0.03)
 ```
@@ -2667,13 +2997,17 @@ def _fields_to_frame(fields: dict) -> pd.DataFrame:
 
 
 def score_one(
-    bundle: dict, fields: dict, cost_matrix: config.CostMatrix = config.DEFAULT_COST_MATRIX
+    bundle: dict,
+    fields: dict,
+    cost_matrix: config.CostMatrix = config.DEFAULT_COST_MATRIX,
 ) -> ScoreResult:
     row = _fields_to_frame(fields)
     probability = float(bundle["model"].predict_proba(row)[:, 1][0])
     threshold = float(bundle["threshold"])
     verdict = "CALL" if probability >= threshold else "SKIP"
-    expected_value = probability * cost_matrix.revenue_per_subscription - cost_matrix.cost_per_call
+    expected_value = (
+        probability * cost_matrix.revenue_per_subscription - cost_matrix.cost_per_call
+    )
     explanation = explain_prediction(bundle, row)
     return ScoreResult(
         probability=probability,
@@ -2702,7 +3036,9 @@ def _tolerant_ingest(frame: pd.DataFrame) -> tuple[pd.DataFrame, list[str]]:
     for spec in config.FIELD_SPECS:
         if spec.name not in clean.columns:
             clean[spec.name] = spec.default
-            notes.append(f"Column '{spec.name}' missing — filled with default {spec.default!r}.")
+            notes.append(
+                f"Column '{spec.name}' missing — filled with default {spec.default!r}."
+            )
         elif spec.kind == "categorical":
             normalized = clean[spec.name].astype(str).str.strip().str.lower()
             unseen = sorted(set(normalized) - set(spec.levels))
@@ -2873,7 +3209,8 @@ def render_drivers_table(
         f"<tr><td>{name}</td><td>{value:+.4f}</td></tr>" for name, value in drivers[:10]
     )
     banner = (
-        "" if reliable
+        ""
+        if reliable
         else f'<div style="color:{BRANDING.warning};margin-bottom:8px;">{note}</div>'
     )
     return f"""
@@ -2961,11 +3298,16 @@ def _score_prospect(*values):
     fields = dict(zip(config.APP_FIELD_ORDER, values, strict=True))
     result = score_one(BUNDLE, fields)
     verdict_html = render_verdict_panel(
-        result.probability, result.threshold, result.verdict,
-        result.confidence_band, result.expected_value_eur,
+        result.probability,
+        result.threshold,
+        result.verdict,
+        result.confidence_band,
+        result.expected_value_eur,
     )
     drivers_html = render_drivers_table(
-        result.drivers, result.explanation_method, result.explanation_reliable,
+        result.drivers,
+        result.explanation_method,
+        result.explanation_reliable,
         result.explanation_note,
     )
     return verdict_html, drivers_html
@@ -2973,7 +3315,9 @@ def _score_prospect(*values):
 
 def _template_csv() -> str:
     path = "/tmp/bank_conversion_template.csv"
-    pd.DataFrame([{spec.name: spec.default for spec in config.FIELD_SPECS}]).to_csv(path, index=False)
+    pd.DataFrame([{spec.name: spec.default for spec in config.FIELD_SPECS}]).to_csv(
+        path, index=False
+    )
     return path
 
 
@@ -2994,11 +3338,14 @@ def _score_csv(file, capacity_pct):
 
 def _model_card_html() -> str:
     if not config.METRICS_PATH.exists():
-        return "<p>No metrics.json found. Run <code>python -m src.models.train</code>.</p>"
+        return (
+            "<p>No metrics.json found. Run <code>python -m src.models.train</code>.</p>"
+        )
     metrics = json.loads(config.METRICS_PATH.read_text())
     drift = (
         json.loads(config.DRIFT_PATH.read_text())
-        if config.DRIFT_PATH.exists() else {"verdict": "unknown"}
+        if config.DRIFT_PATH.exists()
+        else {"verdict": "unknown"}
     )
     test = metrics["test_metrics"]
     rows = "".join(
@@ -3008,24 +3355,24 @@ def _model_card_html() -> str:
     return f"""
     <div class="bcc-card">
       <h3>Test performance</h3>
-      <p>Precision {test['precision']:.4f} &middot; Recall {test['recall']:.4f} &middot;
-         AP {test['average_precision']:.4f} &middot; ROC-AUC {test['roc_auc']:.4f} &middot;
-         Accuracy {test['accuracy']:.4f} (majority baseline {metrics['majority_baseline_accuracy']:.4f})</p>
+      <p>Precision {test["precision"]:.4f} &middot; Recall {test["recall"]:.4f} &middot;
+         AP {test["average_precision"]:.4f} &middot; ROC-AUC {test["roc_auc"]:.4f} &middot;
+         Accuracy {test["accuracy"]:.4f} (majority baseline {metrics["majority_baseline_accuracy"]:.4f})</p>
       <h3>Threshold economics</h3>
-      <p>Threshold {metrics['threshold_search']['threshold']:.4f}
-         (breakeven {metrics['breakeven_probability']:.4f}),
-         uplift vs 0.5: {metrics['threshold_search']['uplift_vs_default']:.2f} EUR,
-         uplift vs call-everyone: {metrics['threshold_search']['uplift_vs_call_everyone']:.2f} EUR.</p>
+      <p>Threshold {metrics["threshold_search"]["threshold"]:.4f}
+         (breakeven {metrics["breakeven_probability"]:.4f}),
+         uplift vs 0.5: {metrics["threshold_search"]["uplift_vs_default"]:.2f} EUR,
+         uplift vs call-everyone: {metrics["threshold_search"]["uplift_vs_call_everyone"]:.2f} EUR.</p>
       <h3>Model comparison (validation)</h3>
       <table class="bcc-table"><thead><tr><th>Model</th><th>AP</th><th>ROC-AUC</th></tr></thead>
         <tbody>{rows}</tbody></table>
       <h3>Drift verdict</h3>
-      <p>{drift['verdict']}</p>
+      <p>{drift["verdict"]}</p>
       <h3>Data quality</h3>
-      <p>{metrics['dataset']['n_rows']} rows, {metrics['dataset']['n_duplicate_rows']} duplicates,
-         pdays sentinel share {metrics['dataset']['pdays_sentinel_share']:.2%}.</p>
+      <p>{metrics["dataset"]["n_rows"]} rows, {metrics["dataset"]["n_duplicate_rows"]} duplicates,
+         pdays sentinel share {metrics["dataset"]["pdays_sentinel_share"]:.2%}.</p>
       <h3>Provenance</h3>
-      <p>sklearn {metrics['sklearn_version']}, trained {metrics['trained_at']}.</p>
+      <p>sklearn {metrics["sklearn_version"]}, trained {metrics["trained_at"]}.</p>
     </div>
     """
 
@@ -3034,12 +3381,18 @@ def _build_field_inputs() -> list:
     inputs = []
     for spec in config.FIELD_SPECS:
         if spec.kind == "categorical":
-            inputs.append(gr.Dropdown(choices=list(spec.levels), value=spec.default, label=spec.label))
+            inputs.append(
+                gr.Dropdown(
+                    choices=list(spec.levels), value=spec.default, label=spec.label
+                )
+            )
         else:
             inputs.append(
                 gr.Number(
-                    value=spec.default, label=spec.label,
-                    minimum=spec.min_value, maximum=spec.max_value,
+                    value=spec.default,
+                    label=spec.label,
+                    minimum=spec.min_value,
+                    maximum=spec.max_value,
                 )
             )
     return inputs
@@ -3054,7 +3407,9 @@ with gr.Blocks(css=build_css(), title=config.BRANDING.app_name) as demo:
         verdict_out = gr.HTML()
         drivers_out = gr.HTML()
         score_button.click(
-            _score_prospect, inputs=field_inputs, outputs=[verdict_out, drivers_out],
+            _score_prospect,
+            inputs=field_inputs,
+            outputs=[verdict_out, drivers_out],
             api_name="score_one",
         )
 
@@ -3068,12 +3423,16 @@ with gr.Blocks(css=build_css(), title=config.BRANDING.app_name) as demo:
         template_button.click(_template_csv, outputs=template_file)
 
         csv_input = gr.File(label="Prospect CSV", file_types=[".csv"])
-        capacity_slider = gr.Slider(0, 100, value=100, step=1, label="Capacity (% of list to call)")
+        capacity_slider = gr.Slider(
+            0, 100, value=100, step=1, label="Capacity (% of list to call)"
+        )
         batch_button = gr.Button("Score list", variant="primary")
         batch_output = gr.File(label="Scored list")
         batch_summary = gr.Textbox(label="Summary", lines=4)
         batch_button.click(
-            _score_csv, inputs=[csv_input, capacity_slider], outputs=[batch_output, batch_summary],
+            _score_csv,
+            inputs=[csv_input, capacity_slider],
+            outputs=[batch_output, batch_summary],
             api_name="score_batch",
         )
 
@@ -3179,28 +3538,36 @@ def _prospect_tab() -> None:
         with columns[i % 3]:
             if spec.kind == "categorical":
                 fields[spec.name] = st.selectbox(
-                    spec.label, options=list(spec.levels),
+                    spec.label,
+                    options=list(spec.levels),
                     index=list(spec.levels).index(spec.default),
                 )
             else:
                 fields[spec.name] = st.number_input(
-                    spec.label, min_value=float(spec.min_value),
-                    max_value=float(spec.max_value), value=float(spec.default),
+                    spec.label,
+                    min_value=float(spec.min_value),
+                    max_value=float(spec.max_value),
+                    value=float(spec.default),
                 )
 
     if st.button("Score", type="primary"):
         result = score_one(bundle, fields)
         st.markdown(
             render_verdict_panel(
-                result.probability, result.threshold, result.verdict,
-                result.confidence_band, result.expected_value_eur,
+                result.probability,
+                result.threshold,
+                result.verdict,
+                result.confidence_band,
+                result.expected_value_eur,
             ),
             unsafe_allow_html=True,
         )
         st.markdown(
             render_drivers_table(
-                result.drivers, result.explanation_method,
-                result.explanation_reliable, result.explanation_note,
+                result.drivers,
+                result.explanation_method,
+                result.explanation_reliable,
+                result.explanation_note,
             ),
             unsafe_allow_html=True,
         )
@@ -3210,7 +3577,9 @@ def _batch_tab() -> None:
     bundle = _bundle()
     st.download_button(
         "Download template CSV",
-        data=pd.DataFrame([{s.name: s.default for s in config.FIELD_SPECS}]).to_csv(index=False),
+        data=pd.DataFrame([{s.name: s.default for s in config.FIELD_SPECS}]).to_csv(
+            index=False
+        ),
         file_name="bank_conversion_template.csv",
     )
     uploaded = st.file_uploader("Prospect CSV", type=["csv"])
@@ -3225,7 +3594,8 @@ def _batch_tab() -> None:
             st.warning(warning)
         st.dataframe(batch.scored)
         st.download_button(
-            "Download scored list", data=batch.scored.to_csv(index=False),
+            "Download scored list",
+            data=batch.scored.to_csv(index=False),
             file_name="bank_conversion_scored.csv",
         )
 
@@ -3237,7 +3607,8 @@ def _model_card_tab() -> None:
     metrics = json.loads(config.METRICS_PATH.read_text())
     drift = (
         json.loads(config.DRIFT_PATH.read_text())
-        if config.DRIFT_PATH.exists() else {"verdict": "unknown"}
+        if config.DRIFT_PATH.exists()
+        else {"verdict": "unknown"}
     )
     test = metrics["test_metrics"]
 
@@ -3257,7 +3628,9 @@ def _model_card_tab() -> None:
     )
 
     st.subheader("Model comparison (validation)")
-    st.dataframe(pd.DataFrame(metrics["model_comparison"]).T[["average_precision", "roc_auc"]])
+    st.dataframe(
+        pd.DataFrame(metrics["model_comparison"]).T[["average_precision", "roc_auc"]]
+    )
 
     st.subheader("Drift verdict")
     st.write(drift["verdict"])
@@ -3276,7 +3649,9 @@ def _model_card_tab() -> None:
 def main() -> None:
     st.title(config.BRANDING.app_name)
     st.caption(config.BRANDING.tagline)
-    tab1, tab2, tab3 = st.tabs(["Score a prospect", "Score a call list", "Model card & monitoring"])
+    tab1, tab2, tab3 = st.tabs(
+        ["Score a prospect", "Score a call list", "Model card & monitoring"]
+    )
     with tab1:
         _prospect_tab()
     with tab2:
@@ -3350,7 +3725,11 @@ from src.data.loader import build_period_index, load_and_split
 def _fig_target_balance(frame: pd.DataFrame, path: Path) -> dict:
     counts = frame[config.TARGET_COLUMN].value_counts()
     fig, ax = plt.subplots(figsize=(5, 4))
-    ax.bar(counts.index, counts.to_numpy(), color=[config.BRANDING.accent, config.BRANDING.danger])
+    ax.bar(
+        counts.index,
+        counts.to_numpy(),
+        color=[config.BRANDING.accent, config.BRANDING.danger],
+    )
     ax.set_title("Target class balance")
     ax.set_ylabel("Count")
     fig.tight_layout()
@@ -3383,16 +3762,22 @@ def _fig_age_distribution(frame: pd.DataFrame, path: Path) -> dict:
 
 
 def _fig_job_conversion(frame: pd.DataFrame, path: Path) -> dict:
-    rate = frame.groupby("job")[config.TARGET_COLUMN].apply(
-        lambda s: (s == config.POSITIVE_LABEL).mean()
-    ).sort_values()
+    rate = (
+        frame.groupby("job")[config.TARGET_COLUMN]
+        .apply(lambda s: (s == config.POSITIVE_LABEL).mean())
+        .sort_values()
+    )
     fig, ax = plt.subplots(figsize=(6, 5))
     ax.barh(rate.index, rate.to_numpy(), color=config.BRANDING.accent)
     ax.set_title("Conversion rate by job")
     fig.tight_layout()
     fig.savefig(path)
     plt.close(fig)
-    return {"title": "Conversion rate by job", "top_job": str(rate.idxmax()), "bottom_job": str(rate.idxmin())}
+    return {
+        "title": "Conversion rate by job",
+        "top_job": str(rate.idxmax()),
+        "bottom_job": str(rate.idxmin()),
+    }
 
 
 def _fig_macro_trend(frame: pd.DataFrame, path: Path) -> dict:
@@ -3404,14 +3789,19 @@ def _fig_macro_trend(frame: pd.DataFrame, path: Path) -> dict:
     fig.tight_layout()
     fig.savefig(path)
     plt.close(fig)
-    return {"title": "euribor3m trend across periods", "min": float(trend.min()), "max": float(trend.max())}
+    return {
+        "title": "euribor3m trend across periods",
+        "min": float(trend.min()),
+        "max": float(trend.max()),
+    }
 
 
 def _fig_pdays_sentinel(frame: pd.DataFrame, path: Path) -> dict:
     share = float((frame["pdays"] == config.PDAYS_SENTINEL).mean())
     fig, ax = plt.subplots(figsize=(4, 4))
     ax.pie(
-        [share, 1 - share], labels=["Never contacted", "Previously contacted"],
+        [share, 1 - share],
+        labels=["Never contacted", "Previously contacted"],
         colors=[config.BRANDING.surface, config.BRANDING.accent],
     )
     ax.set_title("pdays sentinel share")
@@ -3421,7 +3811,9 @@ def _fig_pdays_sentinel(frame: pd.DataFrame, path: Path) -> dict:
     return {"title": "pdays sentinel share", "never_contacted_share": share}
 
 
-def generate_eda(frame: pd.DataFrame, figures_dir: Path, summary_path: Path, findings_path: Path) -> dict:
+def generate_eda(
+    frame: pd.DataFrame, figures_dir: Path, summary_path: Path, findings_path: Path
+) -> dict:
     figures_dir.mkdir(parents=True, exist_ok=True)
     summary_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -3438,7 +3830,9 @@ def generate_eda(frame: pd.DataFrame, figures_dir: Path, summary_path: Path, fin
     summary_lines = ["# EDA Summary", ""]
     for finding in findings:
         detail = {k: v for k, v in finding.items() if k != "title"}
-        summary_lines.append(f"- **{finding['title']}**: {json.dumps(detail, default=str)}")
+        summary_lines.append(
+            f"- **{finding['title']}**: {json.dumps(detail, default=str)}"
+        )
     summary_path.write_text("\n".join(summary_lines))
     return {"findings": findings}
 
@@ -3449,8 +3843,10 @@ def main() -> None:
     args = parser.parse_args()
     dataset = load_and_split(offline=args.offline)
     generate_eda(
-        dataset.train, config.FIGURES_DIR,
-        config.REPORTS_DIR / "eda_summary.md", config.REPORTS_DIR / "eda_findings.json",
+        dataset.train,
+        config.FIGURES_DIR,
+        config.REPORTS_DIR / "eda_summary.md",
+        config.REPORTS_DIR / "eda_findings.json",
     )
 
 
@@ -3482,17 +3878,26 @@ from src import config
 from src.data.loader import DatasetBundle, load_and_split, split_xy
 
 NUMERIC_ONLY: tuple[str, ...] = (
-    "age", "campaign", "pdays", "previous",
-    "emp.var.rate", "cons.price.idx", "cons.conf.idx", "euribor3m", "nr.employed",
+    "age",
+    "campaign",
+    "pdays",
+    "previous",
+    "emp.var.rate",
+    "cons.price.idx",
+    "cons.conf.idx",
+    "euribor3m",
+    "nr.employed",
 )
 
 
 def _quick_auc(x_train, y_train, x_valid, y_valid, columns: tuple[str, ...]) -> float:
-    pipeline = Pipeline([
-        ("imputer", SimpleImputer(strategy="median")),
-        ("scaler", StandardScaler()),
-        ("classifier", LogisticRegression(max_iter=1000, class_weight="balanced")),
-    ])
+    pipeline = Pipeline(
+        [
+            ("imputer", SimpleImputer(strategy="median")),
+            ("scaler", StandardScaler()),
+            ("classifier", LogisticRegression(max_iter=1000, class_weight="balanced")),
+        ]
+    )
     pipeline.fit(x_train[list(columns)], y_train)
     probs = pipeline.predict_proba(x_valid[list(columns)])[:, 1]
     return float(roc_auc_score(y_valid, probs))
@@ -3510,7 +3915,10 @@ def quantify_leakage(dataset: DatasetBundle) -> dict:
 
     without_duration_auc = _quick_auc(x_train, y_train, x_valid, y_valid, NUMERIC_ONLY)
     with_duration_auc = _quick_auc(
-        x_train_with_duration, y_train, x_valid_with_duration, y_valid,
+        x_train_with_duration,
+        y_train,
+        x_valid_with_duration,
+        y_valid,
         (*NUMERIC_ONLY, "duration"),
     )
     return {
@@ -3643,7 +4051,9 @@ def measure_single_row_latency(bundle: dict, n_repeats: int = 200) -> dict:
     }
 
 
-def measure_batch_throughput(bundle: dict, batch_sizes: tuple[int, ...] = (1, 10, 100, 1000, 10000)) -> dict:
+def measure_batch_throughput(
+    bundle: dict, batch_sizes: tuple[int, ...] = (1, 10, 100, 1000, 10000)
+) -> dict:
     row = _sample_row().iloc[0].to_dict()
     results = {}
     for size in batch_sizes:
@@ -3690,14 +4100,19 @@ def _benchmark_onnx(bundle: dict) -> dict:
         from skl2onnx import convert_sklearn
         from skl2onnx.common.data_types import FloatTensorType
     except ImportError:
-        return {"available": False, "note": "Install skl2onnx and onnxruntime to run this comparison."}
+        return {
+            "available": False,
+            "note": "Install skl2onnx and onnxruntime to run this comparison.",
+        }
 
     pipeline = bundle["model"].calibrated_classifiers_[0].estimator.estimator
     classifier = pipeline.named_steps["classifier"]
     transformed = pipeline[:-1].transform(_sample_row())
     n_features = transformed.shape[1]
 
-    onnx_model = convert_sklearn(classifier, initial_types=[("input", FloatTensorType([None, n_features]))])
+    onnx_model = convert_sklearn(
+        classifier, initial_types=[("input", FloatTensorType([None, n_features]))]
+    )
     session = ort.InferenceSession(onnx_model.SerializeToString())
     onnx_input = transformed.astype(np.float32)
 
@@ -3723,7 +4138,8 @@ def _benchmark_onnx(bundle: dict) -> dict:
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--onnx", action="store_true",
+        "--onnx",
+        action="store_true",
         help="Optional: also benchmark an ONNX export of the classifier stage.",
     )
     args = parser.parse_args()

@@ -1,0 +1,187 @@
+{
+  "dataset": {
+    "n_rows": 4803,
+    "n_duplicate_rows": 3,
+    "unknown_counts": {
+      "job": 344,
+      "marital": 148,
+      "education": 481,
+      "default": 1010,
+      "housing": 175,
+      "loan": 205
+    },
+    "pdays_sentinel_share": 0.8213616489693941,
+    "n_train": 3200,
+    "n_valid": 800,
+    "n_test": 803
+  },
+  "model_comparison": {
+    "logistic_regression": {
+      "model_name": "logistic_regression",
+      "average_precision": 0.17247646634084396,
+      "roc_auc": 0.6701634758283067,
+      "accuracy": 0.6225,
+      "precision": 0.12264150943396226,
+      "recall": 0.6290322580645161,
+      "f1": 0.20526315789473684,
+      "n_samples": 800,
+      "n_positive": 62
+    },
+    "hist_gradient_boosting": {
+      "model_name": "hist_gradient_boosting",
+      "average_precision": 0.11564888917949058,
+      "roc_auc": 0.600686248797972,
+      "accuracy": 0.9225,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "n_samples": 800,
+      "n_positive": 62
+    }
+  },
+  "winner": "logistic_regression",
+  "calibration": {
+    "expected_calibration_error": 0.03149940727362433,
+    "reliability_curve": [
+      {
+        "bin": "(-0.001, 0.0235]",
+        "mean_predicted": 0.021080746485734107,
+        "mean_observed": 0.011111111111111112,
+        "count": 90
+      },
+      {
+        "bin": "(0.0235, 0.0324]",
+        "mean_predicted": 0.032329878740540066,
+        "mean_observed": 0.05905511811023622,
+        "count": 254
+      },
+      {
+        "bin": "(0.0324, 0.0779]",
+        "mean_predicted": 0.07792207792207792,
+        "mean_observed": 0.05555555555555555,
+        "count": 72
+      },
+      {
+        "bin": "(0.0779, 0.0806]",
+        "mean_predicted": 0.08064516129032258,
+        "mean_observed": 0.09239130434782608,
+        "count": 184
+      },
+      {
+        "bin": "(0.0806, 0.128]",
+        "mean_predicted": 0.12849162011173187,
+        "mean_observed": 0.07368421052631578,
+        "count": 190
+      },
+      {
+        "bin": "(0.128, 0.5]",
+        "mean_predicted": 0.4171891002232409,
+        "mean_observed": 0.15384615384615385,
+        "count": 13
+      }
+    ]
+  },
+  "threshold_search": {
+    "threshold": 0.035,
+    "expected_net_value": 2560.0,
+    "realized_net_value": 2560.0,
+    "realized_net_value_at_default": 312.0,
+    "realized_net_value_call_everyone": 1040.0,
+    "uplift_vs_default": 2248.0,
+    "uplift_vs_call_everyone": 1520.0
+  },
+  "breakeven_probability": 0.06666666666666667,
+  "test_metrics": {
+    "model_name": "logistic_regression_calibrated",
+    "average_precision": 0.08384963180948629,
+    "roc_auc": 0.5891320754716981,
+    "accuracy": 0.45454545454545453,
+    "precision": 0.08061002178649238,
+    "recall": 0.6981132075471698,
+    "f1": 0.14453125,
+    "n_samples": 803,
+    "n_positive": 53
+  },
+  "majority_baseline_accuracy": 0.933997509339975,
+  "global_importances": [
+    [
+      "campaign",
+      0.06957505044652443
+    ],
+    [
+      "poutcome",
+      0.03104545583918732
+    ],
+    [
+      "education",
+      0.01326197413003643
+    ],
+    [
+      "default",
+      0.005151939628021351
+    ],
+    [
+      "contact",
+      0.004361007994350058
+    ],
+    [
+      "pdays",
+      0.0019633716075984353
+    ],
+    [
+      "emp.var.rate",
+      0.0016752594920392105
+    ],
+    [
+      "housing",
+      0.0016166118346868153
+    ],
+    [
+      "cons.price.idx",
+      0.0009042559012817641
+    ],
+    [
+      "age",
+      0.0008676374664845388
+    ],
+    [
+      "cons.conf.idx",
+      0.0006839435243237102
+    ],
+    [
+      "month",
+      0.0
+    ],
+    [
+      "euribor3m",
+      -0.0009757983391054159
+    ],
+    [
+      "nr.employed",
+      -0.0010315044098677117
+    ],
+    [
+      "previous",
+      -0.00142258962702152
+    ],
+    [
+      "loan",
+      -0.002059960514639325
+    ],
+    [
+      "marital",
+      -0.002425461080958091
+    ],
+    [
+      "day_of_week",
+      -0.004013146804564954
+    ],
+    [
+      "job",
+      -0.007980602825907934
+    ]
+  ],
+  "artifact_size_bytes": 10023,
+  "sklearn_version": "1.8.0",
+  "trained_at": "2026-08-12T17:11:54.932358+00:00"
+}

@@ -25,16 +25,16 @@ streamlit:
 	streamlit run streamlit_app.py
 
 eda:
-	python scripts/run_eda.py
+	python -m scripts.run_eda
 
 leakage:
-	python scripts/leakage_demo.py
+	python -m scripts.leakage_demo
 
 bench:
-	python benchmarks/latency.py
+	python -m benchmarks.latency
 
 report:
-	python scripts/build_report.py
+	python -m scripts.build_report
 
 clean:
 	find . -type d -name __pycache__ -exec rm -rf {} +

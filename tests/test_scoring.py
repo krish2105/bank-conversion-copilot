@@ -1,5 +1,6 @@
 """Threshold economics and drift metrics -- the two places a wrong number
 costs real money or masks real decay."""
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -32,7 +33,9 @@ def test_search_threshold_is_on_grid_and_beats_default_on_its_own_metric():
     y_true = rng.integers(0, 2, size=2000)
     y_prob = np.clip(y_true * 0.4 + rng.random(2000) * 0.3, 0, 1)
     cost_matrix = CostMatrix()
-    result = search_cost_optimal_threshold(y_true, y_prob, cost_matrix=cost_matrix, n_grid=201)
+    result = search_cost_optimal_threshold(
+        y_true, y_prob, cost_matrix=cost_matrix, n_grid=201
+    )
     assert isinstance(result, ThresholdResult)
     grid = np.linspace(0.0, 1.0, 201)
     assert np.isclose(grid, result.threshold).any()
@@ -93,24 +96,34 @@ def test_jensen_shannon_bounded_and_zero_for_identical():
 
 def test_compute_drift_report_verdict_stable_for_identical_frames():
     rng = np.random.default_rng(5)
-    frame = pd.DataFrame({
-        "num": rng.normal(0, 1, 1000),
-        "cat": rng.choice(["a", "b", "c"], size=1000),
-    })
-    report = compute_drift_report(frame, frame.copy(), numeric_columns=["num"], categorical_columns=["cat"])
+    frame = pd.DataFrame(
+        {
+            "num": rng.normal(0, 1, 1000),
+            "cat": rng.choice(["a", "b", "c"], size=1000),
+        }
+    )
+    report = compute_drift_report(
+        frame, frame.copy(), numeric_columns=["num"], categorical_columns=["cat"]
+    )
     assert isinstance(report, DriftReport)
     assert report.verdict == "STABLE"
 
 
 def test_compute_drift_report_verdict_flags_large_shift():
     rng = np.random.default_rng(6)
-    reference = pd.DataFrame({
-        "num": rng.normal(0, 1, 1000),
-        "cat": rng.choice(["a", "b", "c"], size=1000, p=[0.8, 0.1, 0.1]),
-    })
-    current = pd.DataFrame({
-        "num": rng.normal(6, 1, 1000),
-        "cat": rng.choice(["a", "b", "c"], size=1000, p=[0.1, 0.1, 0.8]),
-    })
-    report = compute_drift_report(reference, current, numeric_columns=["num"], categorical_columns=["cat"])
+    reference = pd.DataFrame(
+        {
+            "num": rng.normal(0, 1, 1000),
+            "cat": rng.choice(["a", "b", "c"], size=1000, p=[0.8, 0.1, 0.1]),
+        }
+    )
+    current = pd.DataFrame(
+        {
+            "num": rng.normal(6, 1, 1000),
+            "cat": rng.choice(["a", "b", "c"], size=1000, p=[0.1, 0.1, 0.8]),
+        }
+    )
+    report = compute_drift_report(
+        reference, current, numeric_columns=["num"], categorical_columns=["cat"]
+    )
     assert report.verdict in {"MONITOR", "RETRAIN RECOMMENDED"}

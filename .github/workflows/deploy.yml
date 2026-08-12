@@ -1,0 +1,67 @@
+name: Deploy to Hugging Face Space
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - "docs/**"
+      - "reports/**"
+      - "**/*.md"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-space
+  cancel-in-progress: false
+
+env:
+  HF_USERNAME: krish2105
+  SPACE_NAME: bank-conversion-copilot
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fail before touching the Hub if the model artefact is missing
+        run: |
+          if [ ! -f artifacts/model.joblib ]; then
+            echo "::error::artifacts/model.joblib is missing. Run 'python -m src.models.train' and commit the artefact before deploying."
+            exit 1
+          fi
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Assemble the runtime payload (not a mirror -- tests/benchmarks/scripts/requirements-dev.txt/reports/docs must never reach the Space)
+        run: |
+          mkdir -p deploy
+          cp app.py deploy/
+          cp requirements.txt deploy/
+          cp -r src deploy/src
+          cp -r artifacts deploy/artifacts
+          cp space/README.md deploy/README.md
+          echo "Payload:"
+          find deploy -type f
+
+      - name: Install hub client
+        run: pip install "huggingface_hub[cli]"
+
+      - name: Upload to the Space
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          if [ -z "$HF_TOKEN" ]; then
+            echo "::error::HF_TOKEN secret is not set."
+            exit 1
+          fi
+          hf upload "$HF_USERNAME/$SPACE_NAME" deploy/ . --repo-type space
+
+      - name: Write deployment summary
+        run: |
+          echo "### Deployed to Hugging Face Space" >> "$GITHUB_STEP_SUMMARY"
+          echo "- URL: https://huggingface.co/spaces/$HF_USERNAME/$SPACE_NAME" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Commit: $GITHUB_SHA" >> "$GITHUB_STEP_SUMMARY"

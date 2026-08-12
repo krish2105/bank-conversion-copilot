@@ -13,7 +13,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from src.config import CostMatrix, DEFAULT_COST_MATRIX
+from src.config import DEFAULT_COST_MATRIX, CostMatrix
 
 
 @dataclass
@@ -34,7 +34,10 @@ def realized_net_value(
     call_mask = np.asarray(y_prob) >= threshold
     n_called = int(call_mask.sum())
     n_converted = int(y_true[call_mask].sum())
-    return n_converted * cost_matrix.revenue_per_subscription - n_called * cost_matrix.cost_per_call
+    return (
+        n_converted * cost_matrix.revenue_per_subscription
+        - n_called * cost_matrix.cost_per_call
+    )
 
 
 def search_cost_optimal_threshold(

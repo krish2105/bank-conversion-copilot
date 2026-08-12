@@ -52,7 +52,7 @@ def _try_shap(pipeline, transformed: np.ndarray, feature_names: list[str]):
         explainer = shap.TreeExplainer(classifier)
         raw = explainer.shap_values(transformed)
         values = _normalize_shap_shape(raw)
-        contributions = list(zip(feature_names, values[0].tolist()))
+        contributions = list(zip(feature_names, values[0].tolist(), strict=True))
         contributions.sort(key=lambda pair: abs(pair[1]), reverse=True)
         return contributions
     except Exception:
@@ -67,7 +67,9 @@ def _try_linear(pipeline, transformed: np.ndarray, feature_names: list[str]):
     coefs = np.ravel(coefs)
     if len(coefs) != transformed.shape[1]:
         return None
-    contributions = list(zip(feature_names, (coefs * transformed[0]).tolist()))
+    contributions = list(
+        zip(feature_names, (coefs * transformed[0]).tolist(), strict=True)
+    )
     contributions.sort(key=lambda pair: abs(pair[1]), reverse=True)
     return contributions
 
@@ -88,14 +90,18 @@ def explain_prediction(bundle: dict, x_row: pd.DataFrame) -> ExplanationResult:
         shap_contribs = _try_shap(pipeline, transformed, feature_names)
         if shap_contribs is not None:
             return ExplanationResult(
-                method="shap", reliable=True, contributions=shap_contribs,
+                method="shap",
+                reliable=True,
+                contributions=shap_contribs,
                 note="Exact per-prediction SHAP contributions.",
             )
 
         linear_contribs = _try_linear(pipeline, transformed, feature_names)
         if linear_contribs is not None:
             return ExplanationResult(
-                method="linear_coefficients", reliable=True, contributions=linear_contribs,
+                method="linear_coefficients",
+                reliable=True,
+                contributions=linear_contribs,
                 note="Exact for the logistic model: coefficient x standardised value.",
             )
 

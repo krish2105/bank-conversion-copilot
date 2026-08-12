@@ -1,0 +1,5 @@
+{
+  "roc_auc_without_duration": 0.5969167023288089,
+  "roc_auc_with_duration": 0.8491835926866182,
+  "lift_from_leakage": 0.25226689035780936
+}

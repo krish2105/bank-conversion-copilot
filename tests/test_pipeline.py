@@ -1,5 +1,6 @@
 """Feature engineering happens entirely inside the sklearn Pipeline so
 serving and training can never disagree about how a value was derived."""
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -14,17 +15,19 @@ from src.features.pipeline import (
 
 
 def test_domain_feature_builder_sentinel_flag_and_nan():
-    frame = pd.DataFrame({
-        "pdays": [999, 5, 999, 12],
-        "campaign": [1, 2, 3, 4],
-        "previous": [0, 1, 0, 2],
-        "job": ["admin.", "  RETIRED  ", "unknown", "student"],
-        "marital": ["married", "single", "unknown", "single"],
-        "education": ["high.school", "unknown", "unknown", "basic.9y"],
-        "default": ["no", "no", "unknown", "no"],
-        "housing": ["yes", "no", "unknown", "yes"],
-        "loan": ["no", "no", "unknown", "no"],
-    })
+    frame = pd.DataFrame(
+        {
+            "pdays": [999, 5, 999, 12],
+            "campaign": [1, 2, 3, 4],
+            "previous": [0, 1, 0, 2],
+            "job": ["admin.", "  RETIRED  ", "unknown", "student"],
+            "marital": ["married", "single", "unknown", "single"],
+            "education": ["high.school", "unknown", "unknown", "basic.9y"],
+            "default": ["no", "no", "unknown", "no"],
+            "housing": ["yes", "no", "unknown", "yes"],
+            "loan": ["no", "no", "unknown", "no"],
+        }
+    )
     out = DomainFeatureBuilder().fit_transform(frame)
     assert list(out[config.FEATURE_NEVER_CONTACTED]) == [1, 0, 1, 0]
     assert out["pdays"].iloc[0] != out["pdays"].iloc[0]  # NaN
@@ -33,29 +36,46 @@ def test_domain_feature_builder_sentinel_flag_and_nan():
 
 
 def test_domain_feature_builder_unknown_count_exact():
-    frame = pd.DataFrame({
-        "pdays": [999], "campaign": [1], "previous": [0],
-        "job": ["unknown"], "marital": ["unknown"], "education": ["unknown"],
-        "default": ["no"], "housing": ["yes"], "loan": ["no"],
-    })
+    frame = pd.DataFrame(
+        {
+            "pdays": [999],
+            "campaign": [1],
+            "previous": [0],
+            "job": ["unknown"],
+            "marital": ["unknown"],
+            "education": ["unknown"],
+            "default": ["no"],
+            "housing": ["yes"],
+            "loan": ["no"],
+        }
+    )
     out = DomainFeatureBuilder().fit_transform(frame)
     assert out[config.FEATURE_N_UNKNOWN].iloc[0] == 3
 
 
 def test_domain_feature_builder_contact_intensity_exact():
-    frame = pd.DataFrame({
-        "pdays": [999, 5], "campaign": [10, 4], "previous": [4, 1],
-        "job": ["admin.", "admin."], "marital": ["married", "married"],
-        "education": ["high.school", "high.school"], "default": ["no", "no"],
-        "housing": ["yes", "yes"], "loan": ["no", "no"],
-    })
+    frame = pd.DataFrame(
+        {
+            "pdays": [999, 5],
+            "campaign": [10, 4],
+            "previous": [4, 1],
+            "job": ["admin.", "admin."],
+            "marital": ["married", "married"],
+            "education": ["high.school", "high.school"],
+            "default": ["no", "no"],
+            "housing": ["yes", "yes"],
+            "loan": ["no", "no"],
+        }
+    )
     out = DomainFeatureBuilder().fit_transform(frame)
     assert out[config.FEATURE_CONTACT_INTENSITY].iloc[0] == pytest.approx(10 / 5)
     assert out[config.FEATURE_CONTACT_INTENSITY].iloc[1] == pytest.approx(4 / 2)
 
 
 @pytest.mark.parametrize("scale_numeric", [True, False])
-def test_pipeline_output_dense_finite_and_names_match_width(synthetic_frame, scale_numeric):
+def test_pipeline_output_dense_finite_and_names_match_width(
+    synthetic_frame, scale_numeric
+):
     x, _ = split_xy(synthetic_frame)
     pipeline = build_feature_pipeline(scale_numeric=scale_numeric)
     transformed = pipeline.fit_transform(x)

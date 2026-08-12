@@ -131,7 +131,9 @@ def temporal_split(
         return int(boundaries[np.argmin(np.abs(boundaries - target))])
 
     train_end = snap(int(n * config.TRAIN_FRACTION))
-    valid_end = max(train_end, snap(int(n * (config.TRAIN_FRACTION + config.VALID_FRACTION))))
+    valid_end = max(
+        train_end, snap(int(n * (config.TRAIN_FRACTION + config.VALID_FRACTION)))
+    )
 
     return frame.iloc[:train_end], frame.iloc[train_end:valid_end], frame.iloc[valid_end:]
 
@@ -143,7 +145,9 @@ def split_xy(frame: pd.DataFrame) -> tuple[pd.DataFrame, pd.Series]:
     feature pipeline in src/features/pipeline.py) -- belt and braces.
     """
     y = (frame[config.TARGET_COLUMN] == config.POSITIVE_LABEL).astype(int)
-    x = frame.drop(columns=[config.TARGET_COLUMN, *config.LEAKAGE_DENYLIST], errors="ignore")
+    x = frame.drop(
+        columns=[config.TARGET_COLUMN, *config.LEAKAGE_DENYLIST], errors="ignore"
+    )
     return x, y
 
 

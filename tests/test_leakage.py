@@ -1,5 +1,6 @@
 """The most valuable tests in the repo: prove the model cannot see the
 future (duration) and cannot see across a split boundary (temporal split)."""
+
 import pandas as pd
 import pytest
 
@@ -32,8 +33,8 @@ def test_temporal_split_disjoint_ordered_exhaustive(synthetic_frame):
     train, valid, test = loader.temporal_split(synthetic_frame, periods)
     assert len(train) + len(valid) + len(test) == len(synthetic_frame)
     train_periods = set(periods.iloc[: len(train)])
-    valid_periods = set(periods.iloc[len(train): len(train) + len(valid)])
-    test_periods = set(periods.iloc[len(train) + len(valid):])
+    valid_periods = set(periods.iloc[len(train) : len(train) + len(valid)])
+    test_periods = set(periods.iloc[len(train) + len(valid) :])
     assert train_periods.isdisjoint(valid_periods)
     assert valid_periods.isdisjoint(test_periods)
     assert train_periods.isdisjoint(test_periods)
@@ -54,7 +55,9 @@ def test_quality_audit_counts(synthetic_frame):
     assert audit.n_rows == len(synthetic_frame)
     assert audit.n_duplicate_rows >= 2
     for column in config.UNKNOWN_MARKER_COLUMNS:
-        assert audit.unknown_counts[column] == int((synthetic_frame[column] == "unknown").sum())
+        assert audit.unknown_counts[column] == int(
+            (synthetic_frame[column] == "unknown").sum()
+        )
     assert 0.0 < audit.pdays_sentinel_share < 1.0
 
 

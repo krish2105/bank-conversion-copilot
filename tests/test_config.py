@@ -1,4 +1,5 @@
 """Config is the single source of truth; these tests pin its public contract."""
+
 import numpy as np
 
 from src import config
@@ -20,10 +21,25 @@ def test_field_specs_exclude_duration_and_count_19():
 
 def test_field_specs_cover_all_expected_columns():
     expected = {
-        "age", "job", "marital", "education", "default", "housing", "loan",
-        "contact", "month", "day_of_week", "campaign", "pdays", "previous",
-        "poutcome", "emp.var.rate", "cons.price.idx", "cons.conf.idx",
-        "euribor3m", "nr.employed",
+        "age",
+        "job",
+        "marital",
+        "education",
+        "default",
+        "housing",
+        "loan",
+        "contact",
+        "month",
+        "day_of_week",
+        "campaign",
+        "pdays",
+        "previous",
+        "poutcome",
+        "emp.var.rate",
+        "cons.price.idx",
+        "cons.conf.idx",
+        "euribor3m",
+        "nr.employed",
     }
     assert {f.name for f in config.FIELD_SPECS} == expected
 
@@ -44,7 +60,9 @@ def test_cost_matrix_breakeven():
 
 
 def test_cost_matrix_net_value_all_called_vs_none_called():
-    cm = config.CostMatrix(cost_per_call=8.0, revenue_per_subscription=120.0, cost_of_missed_customer=0.0)
+    cm = config.CostMatrix(
+        cost_per_call=8.0, revenue_per_subscription=120.0, cost_of_missed_customer=0.0
+    )
     probs = np.array([0.9, 0.9, 0.01, 0.01])
     call_high_conf_only = cm.net_value(probs, threshold=0.5)
     call_everyone = cm.net_value(probs, threshold=0.0)
@@ -61,6 +79,11 @@ def test_month_order_and_unknown_columns():
     assert config.MONTH_ORDER[0] == "jan" and config.MONTH_ORDER[-1] == "dec"
     assert len(config.MONTH_ORDER) == 12
     assert set(config.UNKNOWN_MARKER_COLUMNS) == {
-        "job", "marital", "education", "default", "housing", "loan",
+        "job",
+        "marital",
+        "education",
+        "default",
+        "housing",
+        "loan",
     }
     assert config.PDAYS_SENTINEL == 999

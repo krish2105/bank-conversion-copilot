@@ -13,7 +13,7 @@ from __future__ import annotations
 import argparse
 import dataclasses
 import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 import joblib
@@ -32,31 +32,47 @@ from src.features.pipeline import (
     build_feature_pipeline,
     get_feature_names,
 )
-from src.models.evaluate import compute_metrics, expected_calibration_error, reliability_curve
+from src.models.evaluate import (
+    compute_metrics,
+    expected_calibration_error,
+    reliability_curve,
+)
 from src.models.threshold import search_cost_optimal_threshold
 from src.monitor.drift import compute_drift_report
 
 
 def _build_candidates() -> dict[str, object]:
     lr_pipeline = build_feature_pipeline(scale_numeric=True)
-    lr_pipeline.steps.append((
-        "classifier",
-        LogisticRegression(
-            C=1.0, class_weight="balanced", max_iter=2000, solver="lbfgs",
-            random_state=config.RUNTIME.random_state,
-        ),
-    ))
+    lr_pipeline.steps.append(
+        (
+            "classifier",
+            LogisticRegression(
+                C=1.0,
+                class_weight="balanced",
+                max_iter=2000,
+                solver="lbfgs",
+                random_state=config.RUNTIME.random_state,
+            ),
+        )
+    )
 
     hgb_pipeline = build_feature_pipeline(scale_numeric=False)
-    hgb_pipeline.steps.append((
-        "classifier",
-        HistGradientBoostingClassifier(
-            learning_rate=0.06, max_iter=400, max_leaf_nodes=31,
-            min_samples_leaf=40, l2_regularization=1.0, early_stopping=True,
-            validation_fraction=0.15, n_iter_no_change=30,
-            random_state=config.RUNTIME.random_state,
-        ),
-    ))
+    hgb_pipeline.steps.append(
+        (
+            "classifier",
+            HistGradientBoostingClassifier(
+                learning_rate=0.06,
+                max_iter=400,
+                max_leaf_nodes=31,
+                min_samples_leaf=40,
+                l2_regularization=1.0,
+                early_stopping=True,
+                validation_fraction=0.15,
+                n_iter_no_change=30,
+                random_state=config.RUNTIME.random_state,
+            ),
+        )
+    )
 
     return {"logistic_regression": lr_pipeline, "hist_gradient_boosting": hgb_pipeline}
 
@@ -85,10 +101,14 @@ def train_and_save(
     for name, pipeline in candidates.items():
         pipeline.fit(x_train, y_train)
         valid_probs = pipeline.predict_proba(x_valid)[:, 1]
-        validation_metrics[name] = compute_metrics(name, y_valid.to_numpy(), valid_probs, threshold=0.5)
+        validation_metrics[name] = compute_metrics(
+            name, y_valid.to_numpy(), valid_probs, threshold=0.5
+        )
         fitted[name] = pipeline
 
-    winner_name = max(validation_metrics, key=lambda n: validation_metrics[n].average_precision)
+    winner_name = max(
+        validation_metrics, key=lambda n: validation_metrics[n].average_precision
+    )
     winner = fitted[winner_name]
 
     # Isotonic calibration on VALIDATION via FrozenEstimator (sklearn>=1.8
@@ -99,13 +119,17 @@ def train_and_save(
 
     valid_calibrated_probs = calibrated.predict_proba(x_valid)[:, 1]
     threshold_result = search_cost_optimal_threshold(
-        y_valid.to_numpy(), valid_calibrated_probs, cost_matrix=config.DEFAULT_COST_MATRIX,
+        y_valid.to_numpy(),
+        valid_calibrated_probs,
+        cost_matrix=config.DEFAULT_COST_MATRIX,
     )
 
     # TEST is opened exactly once, here, at the end.
     test_probs = calibrated.predict_proba(x_test)[:, 1]
     test_metrics = compute_metrics(
-        f"{winner_name}_calibrated", y_test.to_numpy(), test_probs,
+        f"{winner_name}_calibrated",
+        y_test.to_numpy(),
+        test_probs,
         threshold=threshold_result.threshold,
     )
     majority_baseline_accuracy = float(max(y_test.mean(), 1 - y_test.mean()))
@@ -113,7 +137,10 @@ def train_and_save(
     reliability = reliability_curve(y_test.to_numpy(), test_probs)
 
     drift_report = compute_drift_report(
-        x_train, x_test, numeric_columns=NUMERIC_COLUMNS, categorical_columns=CATEGORICAL_COLUMNS,
+        x_train,
+        x_test,
+        numeric_columns=NUMERIC_COLUMNS,
+        categorical_columns=CATEGORICAL_COLUMNS,
     )
 
     # Global (not per-prediction) permutation importance on the winner's
@@ -123,12 +150,18 @@ def train_and_save(
     # a model type that might not support it (e.g. no feature_importances_
     # on HistGradientBoostingClassifier).
     perm_result = permutation_importance(
-        winner, x_valid, y_valid, scoring="average_precision",
-        n_repeats=5, random_state=config.RUNTIME.random_state, n_jobs=config.RUNTIME.n_jobs,
+        winner,
+        x_valid,
+        y_valid,
+        scoring="average_precision",
+        n_repeats=5,
+        random_state=config.RUNTIME.random_state,
+        n_jobs=config.RUNTIME.n_jobs,
     )
     global_importances = sorted(
-        zip(x_valid.columns.tolist(), perm_result.importances_mean.tolist()),
-        key=lambda pair: pair[1], reverse=True,
+        zip(x_valid.columns.tolist(), perm_result.importances_mean.tolist(), strict=True),
+        key=lambda pair: pair[1],
+        reverse=True,
     )
 
     bundle = {
@@ -138,7 +171,7 @@ def train_and_save(
         "feature_names": get_feature_names(winner),
         "global_importances": global_importances,
         "sklearn_version": sklearn.__version__,
-        "trained_at": datetime.now(timezone.utc).isoformat(),
+        "trained_at": datetime.now(UTC).isoformat(),
     }
     joblib.dump(bundle, model_path)
 
@@ -153,7 +186,8 @@ def train_and_save(
             "n_test": len(dataset.test),
         },
         "model_comparison": {
-            name: dataclasses.asdict(metric) for name, metric in validation_metrics.items()
+            name: dataclasses.asdict(metric)
+            for name, metric in validation_metrics.items()
         },
         "winner": winner_name,
         "calibration": {
@@ -197,17 +231,18 @@ def _render_model_card(metrics: dict, drift: dict) -> str:
     threshold = metrics["threshold_search"]
     return f"""# Model Card — Bank Conversion Copilot
 
-> Auto-generated by `src/models/train.py` from `artifacts/metrics.json`. Do not edit by hand.
+> Auto-generated by `src/models/train.py` from `artifacts/metrics.json`.
+> Do not edit by hand.
 
 ## Overview
 
 | Field | Value |
 |---|---|
-| Winner | {metrics['winner']} |
-| Trained at | {metrics['trained_at']} |
-| sklearn version | {metrics['sklearn_version']} |
+| Winner | {metrics["winner"]} |
+| Trained at | {metrics["trained_at"]} |
+| sklearn version | {metrics["sklearn_version"]} |
 | Selection metric | average_precision (PR-AUC) |
-| Decision threshold | {threshold['threshold']:.4f} |
+| Decision threshold | {threshold["threshold"]:.4f} |
 
 ## Intended use
 
@@ -225,18 +260,18 @@ credit risk, and this model was never validated for that purpose.
 |---|---|---|
 {comparison_rows}
 
-Test set (opened once): precision {test['precision']:.4f}, recall {test['recall']:.4f},
-average precision {test['average_precision']:.4f}, ROC-AUC {test['roc_auc']:.4f}.
-Accuracy is reported last, deliberately: {test['accuracy']:.4f} versus a
-majority-class baseline of {metrics['majority_baseline_accuracy']:.4f} —
+Test set (opened once): precision {test["precision"]:.4f}, recall {test["recall"]:.4f},
+average precision {test["average_precision"]:.4f}, ROC-AUC {test["roc_auc"]:.4f}.
+Accuracy is reported last, deliberately: {test["accuracy"]:.4f} versus a
+majority-class baseline of {metrics["majority_baseline_accuracy"]:.4f} —
 accuracy alone cannot distinguish this model from predicting "no" for
 everyone.
 
 ## Business framing
 
-Break-even call probability: {metrics['breakeven_probability']:.4f}.
-Chosen threshold yields a validation uplift of {threshold['uplift_vs_default']:.2f} EUR
-versus the naive 0.5 cutoff and {threshold['uplift_vs_call_everyone']:.2f} EUR
+Break-even call probability: {metrics["breakeven_probability"]:.4f}.
+Chosen threshold yields a validation uplift of {threshold["uplift_vs_default"]:.2f} EUR
+versus the naive 0.5 cutoff and {threshold["uplift_vs_call_everyone"]:.2f} EUR
 versus calling everyone.
 
 ## Leakage controls
@@ -245,7 +280,7 @@ versus calling everyone.
 
 ## Drift monitoring (train vs test)
 
-Verdict: **{drift['verdict']}**. See `artifacts/drift.json` for per-feature detail.
+Verdict: **{drift["verdict"]}**. See `artifacts/drift.json` for per-feature detail.
 
 ## Known limitations
 
@@ -260,8 +295,12 @@ Verdict: **{drift['verdict']}**. See `artifacts/drift.json` for per-feature deta
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Train the Bank Conversion Copilot model.")
-    parser.add_argument("--offline", action="store_true", help="Load from data/ instead of the network.")
+    parser = argparse.ArgumentParser(
+        description="Train the Bank Conversion Copilot model."
+    )
+    parser.add_argument(
+        "--offline", action="store_true", help="Load from data/ instead of the network."
+    )
     args = parser.parse_args()
 
     dataset = load_and_split(offline=args.offline)
@@ -273,7 +312,8 @@ def main() -> None:
     test = metrics["test_metrics"]
     print(f"Test AP: {test['average_precision']:.4f}  ROC-AUC: {test['roc_auc']:.4f}")
     threshold = metrics["threshold_search"]
-    print(f"Threshold: {threshold['threshold']:.4f}  (breakeven {metrics['breakeven_probability']:.4f})")
+    breakeven = metrics["breakeven_probability"]
+    print(f"Threshold: {threshold['threshold']:.4f}  (breakeven {breakeven:.4f})")
     print(f"Artifact size: {metrics['artifact_size_bytes'] / 1024:.1f} KB")
 
 

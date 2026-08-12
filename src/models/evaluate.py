@@ -53,7 +53,9 @@ def compute_metrics(
     )
 
 
-def confusion_counts(y_true: np.ndarray, y_prob: np.ndarray, threshold: float) -> dict[str, int]:
+def confusion_counts(
+    y_true: np.ndarray, y_prob: np.ndarray, threshold: float
+) -> dict[str, int]:
     y_true = np.asarray(y_true)
     y_pred = (np.asarray(y_prob) >= threshold).astype(int)
     tp = int(np.sum((y_true == 1) & (y_pred == 1)))
@@ -63,7 +65,9 @@ def confusion_counts(y_true: np.ndarray, y_prob: np.ndarray, threshold: float) -
     return {"tp": tp, "fp": fp, "tn": tn, "fn": fn}
 
 
-def reliability_curve(y_true: np.ndarray, y_prob: np.ndarray, n_bins: int = 10) -> pd.DataFrame:
+def reliability_curve(
+    y_true: np.ndarray, y_prob: np.ndarray, n_bins: int = 10
+) -> pd.DataFrame:
     """Quantile-binned, not uniform: most predictions cluster below 0.2 on
     this dataset, and uniform bins would leave the upper bins empty."""
     frame = pd.DataFrame({"y_true": np.asarray(y_true), "y_prob": np.asarray(y_prob)})
@@ -76,7 +80,9 @@ def reliability_curve(y_true: np.ndarray, y_prob: np.ndarray, n_bins: int = 10) 
     return grouped.reset_index()
 
 
-def expected_calibration_error(y_true: np.ndarray, y_prob: np.ndarray, n_bins: int = 10) -> float:
+def expected_calibration_error(
+    y_true: np.ndarray, y_prob: np.ndarray, n_bins: int = 10
+) -> float:
     curve = reliability_curve(y_true, y_prob, n_bins=n_bins)
     weights = curve["count"] / curve["count"].sum()
     gaps = (curve["mean_predicted"] - curve["mean_observed"]).abs()
@@ -86,7 +92,9 @@ def expected_calibration_error(y_true: np.ndarray, y_prob: np.ndarray, n_bins: i
 def pr_curve_points(y_true: np.ndarray, y_prob: np.ndarray) -> pd.DataFrame:
     precision, recall, thresholds = precision_recall_curve(y_true, y_prob)
     thresholds = np.append(thresholds, 1.0)
-    return pd.DataFrame({"precision": precision, "recall": recall, "threshold": thresholds})
+    return pd.DataFrame(
+        {"precision": precision, "recall": recall, "threshold": thresholds}
+    )
 
 
 def roc_curve_points(y_true: np.ndarray, y_prob: np.ndarray) -> pd.DataFrame:
