@@ -35,8 +35,7 @@ Management, Dubai) -- final group project.
     python -m src.models.train     # real training run (needs network)
     streamlit run streamlit_app.py
 
-See `docs/RUNBOOK.md` for the full workflow, and `BUILD_PROMPT.md` for the
-complete build specification this repository implements.
+See `docs/RUNBOOK.md` for the full workflow.
 
 > **Note:** `artifacts/` contains a real model trained on the actual UCI
 > dataset. Its test ROC-AUC (~0.52) is lower than BUILD_PROMPT.md's

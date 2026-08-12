@@ -78,7 +78,7 @@ after a change: just push to `main`.
 
 ## Troubleshooting
 
-See `BUILD_PROMPT.md` Part 6 for the full table. Most common:
+Most common issues:
 
 | Symptom | Fix |
 |---|---|
