@@ -6,11 +6,9 @@ Real training has been run against the actual UCI dataset.
 `artifacts/model.joblib`, `metrics.json`, `model_card.md`, and `drift.json`
 are all genuine, not synthetic placeholders. `reports/eda_findings.json`,
 `reports/leakage_demo.json`, and the figures in `reports/figures/` are
-likewise from the real dataset. What's still outstanding is entirely on
-the Hugging Face side (`BUILD_PROMPT.md` Part 2 Phases 0, 4, 5): a Space,
-a token, and the `HF_TOKEN` GitHub secret. These require an actual HF
-account login and cannot be done by an agent — see "Deploy" below for the
-exact steps.
+likewise from the real dataset. The Hugging Face Space is created and the
+`HF_TOKEN` GitHub secret is set — deployment is live at
+https://huggingface.co/spaces/krish21may/bank.
 
 ### Important finding: test ROC-AUC is ~0.52, not the ~0.78-0.81 BUILD_PROMPT.md predicts
 
@@ -72,9 +70,11 @@ Both require `artifacts/model.joblib` to exist first.
 
 ## Deploy
 
-See `BUILD_PROMPT.md` Part 2 Phases 4-6: create the Space, add the
-`HF_TOKEN` GitHub secret, push to `main`. `deploy.yml` fails loudly (not
-silently) if `artifacts/model.joblib` is missing or the secret is unset.
+Live at https://huggingface.co/spaces/krish21may/bank, deployed
+automatically by `.github/workflows/deploy.yml` on every push to `main`
+(except doc-only changes). `deploy.yml` fails loudly (not silently) if
+`artifacts/model.joblib` is missing or `HF_TOKEN` is unset. To redeploy
+after a change: just push to `main`.
 
 ## Troubleshooting
 

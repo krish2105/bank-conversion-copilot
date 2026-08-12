@@ -10,9 +10,8 @@ Management, Dubai) -- final group project.
 
 ## Live app
 
-- Hugging Face Space: https://huggingface.co/spaces/krish2105/bank-conversion-copilot
-  (deploys automatically from `main` -- see `.github/workflows/deploy.yml`.
-  Not live until Phases 4-5 of `BUILD_PROMPT.md` Part 2 are complete.)
+- Hugging Face Space: https://huggingface.co/spaces/krish21may/bank
+  (deploys automatically from `main` -- see `.github/workflows/deploy.yml`.)
 
 ## What's here
 
@@ -47,24 +46,14 @@ complete build specification this repository implements.
 > 2009-2010 test period), not a bug. See `docs/RUNBOOK.md` for the full
 > investigation.
 
-## Deploying to Hugging Face (what's left)
+## Deployment
 
-This needs your own Hugging Face login and cannot be automated by an
-agent — see `BUILD_PROMPT.md` Part 2 Phases 0, 4, 5 for full detail.
-Short version:
-
-1. **Check account age** at https://huggingface.co/settings/account —
-   needs a verified email and an account older than 30 days for free
-   ZeroGPU Spaces.
-2. **Create the Space**: https://huggingface.co/new-space → SDK **Gradio**
-   → Hardware **ZeroGPU** → name `bank-conversion-copilot`.
-3. **Create a token**: https://huggingface.co/settings/tokens → Fine-grained
-   → Write access scoped to that Space.
-4. **Add it as a GitHub secret**: repo Settings → Secrets and variables →
-   Actions → New repository secret → name exactly `HF_TOKEN`.
-5. **Trigger deploy**: `git commit --allow-empty -m "Deploy" && git push` —
-   `.github/workflows/deploy.yml` runs automatically and uploads `app.py`,
-   `src/`, `artifacts/`, and `requirements.txt` to the Space.
+Deployed automatically by `.github/workflows/deploy.yml` on every push to
+`main`: it assembles a minimal runtime payload (`app.py`, `requirements.txt`,
+`src/`, `artifacts/`, the Space README) and uploads it to the Hugging Face
+Space using the `HF_TOKEN` GitHub secret. See
+`docs/ADR-001-deployment-target.md` and `docs/RUNBOOK.md` for the full
+detail.
 
 ## Dataset
 

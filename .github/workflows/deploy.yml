@@ -16,8 +16,8 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  HF_USERNAME: krish2105
-  SPACE_NAME: bank-conversion-copilot
+  HF_USERNAME: krish21may
+  SPACE_NAME: bank
 
 jobs:
   deploy:

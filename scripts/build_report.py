@@ -25,7 +25,7 @@ from PIL import Image
 from src import config
 
 GITHUB_URL = "https://github.com/krish2105/bank-conversion-copilot"
-HF_SPACE_URL = "https://huggingface.co/spaces/krish2105/bank-conversion-copilot"
+HF_SPACE_URL = "https://huggingface.co/spaces/krish21may/bank"
 GROUP_MEMBERS = ("Krishna Mathur", "Atharva Soundankar", "Yash Petkar")
 
 REPO_TREE = """bank-conversion-copilot/
