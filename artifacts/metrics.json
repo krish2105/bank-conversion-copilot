@@ -1,187 +1,193 @@
 {
   "dataset": {
-    "n_rows": 4803,
-    "n_duplicate_rows": 3,
+    "n_rows": 41188,
+    "n_duplicate_rows": 12,
     "unknown_counts": {
-      "job": 344,
-      "marital": 148,
-      "education": 481,
-      "default": 1010,
-      "housing": 175,
-      "loan": 205
+      "job": 330,
+      "marital": 80,
+      "education": 1731,
+      "default": 8597,
+      "housing": 990,
+      "loan": 990
     },
-    "pdays_sentinel_share": 0.8213616489693941,
-    "n_train": 3200,
-    "n_valid": 800,
-    "n_test": 803
+    "pdays_sentinel_share": 0.9632174419733903,
+    "n_train": 27972,
+    "n_valid": 8252,
+    "n_test": 4964
   },
   "model_comparison": {
     "logistic_regression": {
       "model_name": "logistic_regression",
-      "average_precision": 0.17247646634084396,
-      "roc_auc": 0.6701634758283067,
-      "accuracy": 0.6225,
-      "precision": 0.12264150943396226,
-      "recall": 0.6290322580645161,
-      "f1": 0.20526315789473684,
-      "n_samples": 800,
-      "n_positive": 62
+      "average_precision": 0.17781100753700493,
+      "roc_auc": 0.6049839477735741,
+      "accuracy": 0.22818710615608337,
+      "precision": 0.12126734894153933,
+      "recall": 0.8954451345755694,
+      "f1": 0.21360661810100012,
+      "n_samples": 8252,
+      "n_positive": 966
     },
     "hist_gradient_boosting": {
       "model_name": "hist_gradient_boosting",
-      "average_precision": 0.11564888917949058,
-      "roc_auc": 0.600686248797972,
-      "accuracy": 0.9225,
-      "precision": 0.0,
-      "recall": 0.0,
-      "f1": 0.0,
-      "n_samples": 800,
-      "n_positive": 62
+      "average_precision": 0.1159116682622792,
+      "roc_auc": 0.49947110627659386,
+      "accuracy": 0.8818468250121183,
+      "precision": 0.09090909090909091,
+      "recall": 0.0010351966873706005,
+      "f1": 0.0020470829068577278,
+      "n_samples": 8252,
+      "n_positive": 966
     }
   },
   "winner": "logistic_regression",
   "calibration": {
-    "expected_calibration_error": 0.03149940727362433,
+    "expected_calibration_error": 0.25219256645475996,
     "reliability_curve": [
       {
-        "bin": "(-0.001, 0.0235]",
-        "mean_predicted": 0.021080746485734107,
-        "mean_observed": 0.011111111111111112,
-        "count": 90
+        "bin": "(0.0782, 0.0942]",
+        "mean_predicted": 0.08632139348558147,
+        "mean_observed": 0.4568106312292359,
+        "count": 1204
       },
       {
-        "bin": "(0.0235, 0.0324]",
-        "mean_predicted": 0.032329878740540066,
-        "mean_observed": 0.05905511811023622,
-        "count": 254
+        "bin": "(0.0942, 0.11]",
+        "mean_predicted": 0.10376051815673538,
+        "mean_observed": 0.40406976744186046,
+        "count": 344
       },
       {
-        "bin": "(0.0324, 0.0779]",
-        "mean_predicted": 0.07792207792207792,
-        "mean_observed": 0.05555555555555555,
-        "count": 72
+        "bin": "(0.11, 0.118]",
+        "mean_predicted": 0.11772203369688826,
+        "mean_observed": 0.3816884661117717,
+        "count": 841
       },
       {
-        "bin": "(0.0779, 0.0806]",
-        "mean_predicted": 0.08064516129032258,
-        "mean_observed": 0.09239130434782608,
-        "count": 184
+        "bin": "(0.118, 0.179]",
+        "mean_predicted": 0.1776482024787712,
+        "mean_observed": 0.4010989010989011,
+        "count": 182
       },
       {
-        "bin": "(0.0806, 0.128]",
-        "mean_predicted": 0.12849162011173187,
-        "mean_observed": 0.07368421052631578,
-        "count": 190
+        "bin": "(0.179, 0.196]",
+        "mean_predicted": 0.19535780861640428,
+        "mean_observed": 0.43838028169014087,
+        "count": 568
       },
       {
-        "bin": "(0.128, 0.5]",
-        "mean_predicted": 0.4171891002232409,
-        "mean_observed": 0.15384615384615385,
-        "count": 13
+        "bin": "(0.196, 0.282]",
+        "mean_predicted": 0.27163432817522015,
+        "mean_observed": 0.33585858585858586,
+        "count": 396
+      },
+      {
+        "bin": "(0.282, 0.327]",
+        "mean_predicted": 0.3272392523962843,
+        "mean_observed": 0.5206438068579426,
+        "count": 1429
       }
     ]
   },
   "threshold_search": {
-    "threshold": 0.035,
-    "expected_net_value": 2560.0,
-    "realized_net_value": 2560.0,
-    "realized_net_value_at_default": 312.0,
-    "realized_net_value_call_everyone": 1040.0,
-    "uplift_vs_default": 2248.0,
-    "uplift_vs_call_everyone": 1520.0
+    "threshold": 0.005,
+    "expected_net_value": 49920.0,
+    "realized_net_value": 49920.0,
+    "realized_net_value_at_default": 0.0,
+    "realized_net_value_call_everyone": 49904.0,
+    "uplift_vs_default": 49920.0,
+    "uplift_vs_call_everyone": 16.0
   },
   "breakeven_probability": 0.06666666666666667,
   "test_metrics": {
     "model_name": "logistic_regression_calibrated",
-    "average_precision": 0.08384963180948629,
-    "roc_auc": 0.5891320754716981,
-    "accuracy": 0.45454545454545453,
-    "precision": 0.08061002178649238,
-    "recall": 0.6981132075471698,
-    "f1": 0.14453125,
-    "n_samples": 803,
-    "n_positive": 53
+    "average_precision": 0.47498892604621,
+    "roc_auc": 0.5240028624033508,
+    "accuracy": 0.4450040290088638,
+    "precision": 0.4450040290088638,
+    "recall": 1.0,
+    "f1": 0.615920814164227,
+    "n_samples": 4964,
+    "n_positive": 2209
   },
-  "majority_baseline_accuracy": 0.933997509339975,
+  "majority_baseline_accuracy": 0.5549959709911362,
   "global_importances": [
     [
-      "campaign",
-      0.06957505044652443
-    ],
-    [
-      "poutcome",
-      0.03104545583918732
-    ],
-    [
-      "education",
-      0.01326197413003643
-    ],
-    [
-      "default",
-      0.005151939628021351
-    ],
-    [
-      "contact",
-      0.004361007994350058
+      "month",
+      0.024223361226057692
     ],
     [
       "pdays",
-      0.0019633716075984353
+      0.01809136943052972
     ],
     [
-      "emp.var.rate",
-      0.0016752594920392105
+      "poutcome",
+      0.0033021416009520964
     ],
     [
-      "housing",
-      0.0016166118346868153
+      "education",
+      0.002050288051163568
     ],
     [
-      "cons.price.idx",
-      0.0009042559012817641
+      "campaign",
+      0.001708761818108373
     ],
     [
-      "age",
-      0.0008676374664845388
-    ],
-    [
-      "cons.conf.idx",
-      0.0006839435243237102
-    ],
-    [
-      "month",
-      0.0
-    ],
-    [
-      "euribor3m",
-      -0.0009757983391054159
-    ],
-    [
-      "nr.employed",
-      -0.0010315044098677117
+      "contact",
+      0.0015451758034201123
     ],
     [
       "previous",
-      -0.00142258962702152
-    ],
-    [
-      "loan",
-      -0.002059960514639325
+      0.0014661547725512759
     ],
     [
       "marital",
-      -0.002425461080958091
-    ],
-    [
-      "day_of_week",
-      -0.004013146804564954
+      0.0013581132566354293
     ],
     [
       "job",
-      -0.007980602825907934
+      0.0009354546393025964
+    ],
+    [
+      "default",
+      0.0009349553220514672
+    ],
+    [
+      "cons.price.idx",
+      3.228599139021293e-05
+    ],
+    [
+      "emp.var.rate",
+      0.0
+    ],
+    [
+      "nr.employed",
+      0.0
+    ],
+    [
+      "age",
+      -0.0003218178239331737
+    ],
+    [
+      "loan",
+      -0.0003792479741406785
+    ],
+    [
+      "cons.conf.idx",
+      -0.0004086272158253912
+    ],
+    [
+      "housing",
+      -0.0006713404062916428
+    ],
+    [
+      "day_of_week",
+      -0.002265699193102655
+    ],
+    [
+      "euribor3m",
+      -0.004594655560784233
     ]
   ],
-  "artifact_size_bytes": 10023,
+  "artifact_size_bytes": 11238,
   "sklearn_version": "1.8.0",
-  "trained_at": "2026-08-12T17:11:54.932358+00:00"
+  "trained_at": "2026-08-12T20:02:34.162801+00:00"
 }

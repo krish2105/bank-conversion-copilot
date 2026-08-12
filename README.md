@@ -39,10 +39,32 @@ Management, Dubai) -- final group project.
 See `docs/RUNBOOK.md` for the full workflow, and `BUILD_PROMPT.md` for the
 complete build specification this repository implements.
 
-> **Note:** `artifacts/` currently contains a placeholder model trained on
-> synthetic data, so the apps are demonstrable out of the box. Run
-> `python -m src.models.train` against the real dataset before trusting
-> any number in `artifacts/metrics.json` or the model card.
+> **Note:** `artifacts/` contains a real model trained on the actual UCI
+> dataset. Its test ROC-AUC (~0.52) is lower than BUILD_PROMPT.md's
+> predicted ~0.78-0.81 band — this was investigated and is a genuine,
+> explainable property of a strict chronological split on this dataset
+> (severe regime shift between the row-heavy 2008 training period and the
+> 2009-2010 test period), not a bug. See `docs/RUNBOOK.md` for the full
+> investigation.
+
+## Deploying to Hugging Face (what's left)
+
+This needs your own Hugging Face login and cannot be automated by an
+agent — see `BUILD_PROMPT.md` Part 2 Phases 0, 4, 5 for full detail.
+Short version:
+
+1. **Check account age** at https://huggingface.co/settings/account —
+   needs a verified email and an account older than 30 days for free
+   ZeroGPU Spaces.
+2. **Create the Space**: https://huggingface.co/new-space → SDK **Gradio**
+   → Hardware **ZeroGPU** → name `bank-conversion-copilot`.
+3. **Create a token**: https://huggingface.co/settings/tokens → Fine-grained
+   → Write access scoped to that Space.
+4. **Add it as a GitHub secret**: repo Settings → Secrets and variables →
+   Actions → New repository secret → name exactly `HF_TOKEN`.
+5. **Trigger deploy**: `git commit --allow-empty -m "Deploy" && git push` —
+   `.github/workflows/deploy.yml` runs automatically and uploads `app.py`,
+   `src/`, `artifacts/`, and `requirements.txt` to the Space.
 
 ## Dataset
 

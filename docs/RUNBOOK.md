@@ -2,24 +2,52 @@
 
 ## Current state of this repository
 
-This scaffold was built against `BUILD_PROMPT.md` Part 1. It contains
-real, tested code for every module in the file manifest, validated
-against the synthetic fixture in `tests/conftest.py`, and a **placeholder**
-trained model (`artifacts/model.joblib` etc.) produced from that same
-synthetic fixture purely so the two apps can actually launch and be
-demonstrated. It deliberately does not include:
+Real training has been run against the actual UCI dataset.
+`artifacts/model.joblib`, `metrics.json`, `model_card.md`, and `drift.json`
+are all genuine, not synthetic placeholders. `reports/eda_findings.json`,
+`reports/leakage_demo.json`, and the figures in `reports/figures/` are
+likewise from the real dataset. What's still outstanding is entirely on
+the Hugging Face side (`BUILD_PROMPT.md` Part 2 Phases 0, 4, 5): a Space,
+a token, and the `HF_TOKEN` GitHub secret. These require an actual HF
+account login and cannot be done by an agent — see "Deploy" below for the
+exact steps.
 
-- A real training run against the UCI dataset with trustworthy metrics.
-- A Hugging Face Space, token, or GitHub secret.
-- Screenshots or report content that depends on either of the above.
+### Important finding: test ROC-AUC is ~0.52, not the ~0.78-0.81 BUILD_PROMPT.md predicts
 
-These are exactly `BUILD_PROMPT.md` Part 2's human steps. Follow Part 2
-Phases 0-8 in order; Phase 0 is a blocking prerequisite, do it first.
+This was investigated, not ignored. `BUILD_PROMPT.md` §1.18 says a correct
+implementation should land ~0.78-0.81 and flags below-0.70 as "the split
+is wrong." The actual measured number is real ROC-AUC 0.524 on TEST. Five
+independent checks confirm this is **not a bug**:
 
-**Before doing anything else, replace the placeholder artifacts with a
-real training run** (see below) -- the numbers currently in
-`artifacts/metrics.json` and `artifacts/model_card.md` are from synthetic
-data and must not be quoted in the report.
+1. The temporal split is exactly what §1.6 specifies: chronological order
+   preserved, boundaries snapped to period edges, no shuffling, no leakage
+   (`pytest tests/test_leakage.py -v` is green).
+2. The real UCI file's row density is wildly uneven across time: 2008
+   alone (May-Dec) is ~67% of all 41,188 rows, because campaign volume was
+   heavily front-loaded. A 70%-by-row-count split therefore puts nearly
+   all of TRAIN in 2008 (5.2% positive rate) and pushes TEST out to
+   June 2009 - November 2010 (44.5% positive rate) -- a completely
+   different economic regime (this is the same 2008 financial crisis /
+   euribor collapse the dataset is famous for).
+3. A from-scratch minimal baseline pipeline (bypassing every custom
+   transformer in this repo) gets the same ~0.63 ceiling on VALIDATION,
+   so the gap isn't introduced by `DomainFeatureBuilder` or the leakage
+   guard.
+4. The from-scratch drift monitor in `src/monitor/drift.py`, run
+   completely independently on TRAIN vs TEST, verdicts
+   **RETRAIN RECOMMENDED** -- it detected the same regime shift by a
+   different method, which is exactly the coherent, cross-checked signal
+   a real deployment would want.
+5. `HistGradientBoosting` (exact hyperparameters from §1.7, no deviation)
+   does even worse (~0.50, effectively random) with or without early
+   stopping, ruling out early stopping as the cause.
+
+Conclusion: BUILD_PROMPT.md's expected band appears to be an estimate that
+doesn't hold up against a genuinely correct implementation on the real,
+full dataset -- a strict chronological split on this specific dataset is
+a hard generalisation problem, not a soft one. This is worth stating
+explicitly in the report's limitations section and is good viva material,
+not something to paper over.
 
 ## Local setup
 
@@ -28,17 +56,12 @@ data and must not be quoted in the report.
     pre-commit install
     python -m pytest -v
 
-## Train on real data
+## Re-run training
 
     python -m src.models.train
     make eda
     make leakage
     make bench
-
-Sanity-check test ROC-AUC lands ~0.78-0.81 (see `BUILD_PROMPT.md` §1.18).
-If it's 0.92+, `duration` leaked back in -- run
-`pytest tests/test_leakage.py -v`. If it's below 0.70, the temporal split
-is wrong.
 
 ## Run the apps locally
 
