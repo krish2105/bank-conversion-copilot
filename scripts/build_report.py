@@ -508,11 +508,25 @@ def build_report(
 
     # 11. Screenshot of the deployed Hugging Face application
     _add_heading(doc, "11. Screenshot of the Deployed Hugging Face Application")
+    doc.add_paragraph(
+        "The app is live on Hugging Face Spaces (ZeroGPU hardware, free "
+        "tier), deployed automatically by deploy.yml. Screenshots below "
+        "are from the live Space itself -- note the Hugging Face branding "
+        "chip in the corner confirming this is not a local screenshot."
+    )
     hf_screenshot = screenshots_dir / "07-space-live.png"
+    hf_scored_screenshot = screenshots_dir / "07-space-live-scored.png"
     if hf_screenshot.exists():
         caption = "Screenshot 8: The live app on Hugging Face Spaces."
         _add_image(doc, hf_screenshot, caption)
-    else:
+    if hf_scored_screenshot.exists():
+        _add_image(
+            doc,
+            hf_scored_screenshot,
+            "Screenshot 9: A real prediction scored live on the deployed "
+            "Space (not a local screenshot).",
+        )
+    if not hf_screenshot.exists():
         doc.add_paragraph(
             "[[ PENDING: the Hugging Face Space has not been created yet. "
             "This requires an account login and cannot be done by an "
@@ -531,12 +545,6 @@ def build_report(
     # 13. Link to the deployed Hugging Face Space
     _add_heading(doc, "13. Link to the Deployed Hugging Face Space")
     doc.add_paragraph(HF_SPACE_URL)
-    if not hf_screenshot.exists():
-        doc.add_paragraph(
-            "[[ Not yet live -- see Section 11. Once HF_TOKEN is set and "
-            "deploy.yml has run successfully, this URL will serve the "
-            "live app. ]]"
-        )
 
     # 14. Brief explanation of how the automated deployment process works
     _add_heading(doc, "14. How the Automated Deployment Process Works")
