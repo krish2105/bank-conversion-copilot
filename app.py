@@ -5,6 +5,14 @@ on free Space hardware are dominated by artefact deserialisation, and a
 live demo audience should never watch that happen. `import spaces` is
 wrapped in try/except because it only exists inside an actual Space
 container -- local development and CI must not require it.
+
+The model itself is plain sklearn/CPU and never touches a GPU, but
+ZeroGPU hardware (the only free tier available -- see
+docs/ADR-001-deployment-target.md) refuses to start a Space unless at
+least one callback is decorated with @spaces.GPU. The two scoring
+callbacks are wrapped in `spaces.GPU` below purely to satisfy that
+startup check; the decorator is a no-op locally since `spaces` is None
+there.
 """
 
 from __future__ import annotations
@@ -72,6 +80,11 @@ def _score_csv(file, capacity_pct):
     if batch.warnings:
         summary += "\n\nWarnings:\n" + "\n".join(f"- {w}" for w in batch.warnings)
     return str(out_path), summary
+
+
+if spaces is not None:
+    _score_prospect = spaces.GPU(_score_prospect)
+    _score_csv = spaces.GPU(_score_csv)
 
 
 def _model_card_html() -> str:
@@ -143,7 +156,7 @@ def _build_field_inputs() -> list:
     return inputs
 
 
-with gr.Blocks(css=build_css(), title=config.BRANDING.app_name) as demo:
+with gr.Blocks(title=config.BRANDING.app_name) as demo:
     gr.Markdown(f"# {config.BRANDING.app_name}\n{config.BRANDING.tagline}")
 
     with gr.Tab("Score a prospect"):
@@ -188,4 +201,4 @@ with gr.Blocks(css=build_css(), title=config.BRANDING.app_name) as demo:
 if __name__ == "__main__":
     import os
 
-    demo.launch(server_port=int(os.environ.get("PORT", 7860)))
+    demo.launch(css=build_css(), server_port=int(os.environ.get("PORT", 7860)))
