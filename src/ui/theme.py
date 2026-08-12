@@ -26,15 +26,21 @@ def build_css(branding: Branding = BRANDING) -> str:
         color: var(--text) !important;
         font-family: {branding.font_family} !important;
     }}
+    .gradio-container .prose, .gradio-container .prose * {{
+        color: var(--text) !important;
+    }}
+    .bcc-card, .bcc-card * {{
+        color: var(--text) !important;
+    }}
     .bcc-card {{
-        background-color: var(--surface);
+        background-color: var(--surface) !important;
         border: 1px solid rgba(255,255,255,0.08);
         border-radius: 10px;
         padding: 16px 20px;
         margin-bottom: 12px;
     }}
-    .bcc-verdict-call {{ color: var(--accent); font-weight: 700; }}
-    .bcc-verdict-skip {{ color: var(--danger); font-weight: 700; }}
+    .bcc-verdict-call {{ color: var(--accent) !important; font-weight: 700; }}
+    .bcc-verdict-skip {{ color: var(--danger) !important; font-weight: 700; }}
     .bcc-bar-track {{
         position: relative;
         height: 10px;
@@ -44,11 +50,11 @@ def build_css(branding: Branding = BRANDING) -> str:
     }}
     .bcc-bar-fill {{
         position: absolute; left: 0; top: 0; height: 100%;
-        background: var(--accent); border-radius: 5px;
+        background: var(--accent) !important; border-radius: 5px;
     }}
     .bcc-cutoff-marker {{
         position: absolute; top: -4px; width: 2px; height: 18px;
-        background: var(--warning);
+        background: var(--warning) !important;
     }}
     table.bcc-table {{ width: 100%; border-collapse: collapse; }}
     table.bcc-table th, table.bcc-table td {{
@@ -81,7 +87,7 @@ def render_verdict_panel(
       </div>
       <div class="{verdict_class}" style="font-size:20px;">{verdict}</div>
       <div style="opacity:0.7;">Confidence: {confidence_band}</div>
-      <div style="color:{value_color};font-weight:600;">
+      <div style="color:{value_color} !important;font-weight:600;">
         Expected value of this call: {expected_value_eur:+.2f} EUR
       </div>
     </div>
@@ -94,11 +100,8 @@ def render_drivers_table(
     rows = "".join(
         f"<tr><td>{name}</td><td>{value:+.4f}</td></tr>" for name, value in drivers[:10]
     )
-    banner = (
-        ""
-        if reliable
-        else f'<div style="color:{BRANDING.warning};margin-bottom:8px;">{note}</div>'
-    )
+    warning_style = f"color:{BRANDING.warning} !important;margin-bottom:8px;"
+    banner = "" if reliable else f'<div style="{warning_style}">{note}</div>'
     return f"""
     <div class="bcc-card">
       <div style="font-size:14px;opacity:0.7;">Drivers ({method})</div>

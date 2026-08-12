@@ -10,6 +10,8 @@ container -- local development and CI must not require it.
 from __future__ import annotations
 
 import json
+import tempfile
+from pathlib import Path
 
 import gradio as gr
 import pandas as pd
@@ -46,11 +48,15 @@ def _score_prospect(*values):
 
 
 def _template_csv() -> str:
-    path = "/tmp/bank_conversion_template.csv"
+    # Gradio only allows returning files from cwd or the OS temp dir it
+    # itself resolves via Python's tempfile module. On macOS that is
+    # /var/folders/.../T, NOT the /tmp symlink -- hardcoding "/tmp"
+    # trips Gradio's own path-allowlist check.
+    path = Path(tempfile.gettempdir()) / "bank_conversion_template.csv"
     pd.DataFrame([{spec.name: spec.default for spec in config.FIELD_SPECS}]).to_csv(
         path, index=False
     )
-    return path
+    return str(path)
 
 
 def _score_csv(file, capacity_pct):
@@ -59,13 +65,13 @@ def _score_csv(file, capacity_pct):
     frame = pd.read_csv(file.name)
     capacity_fraction = capacity_pct / 100.0 if capacity_pct else None
     batch = score_batch(BUNDLE, frame, capacity_fraction=capacity_fraction)
-    out_path = "/tmp/bank_conversion_scored.csv"
+    out_path = Path(tempfile.gettempdir()) / "bank_conversion_scored.csv"
     batch.scored.to_csv(out_path, index=False)
     n_call = int((batch.scored["verdict"] == "CALL").sum())
     summary = f"{n_call} of {len(batch.scored)} marked CALL."
     if batch.warnings:
         summary += "\n\nWarnings:\n" + "\n".join(f"- {w}" for w in batch.warnings)
-    return out_path, summary
+    return str(out_path), summary
 
 
 def _model_card_html() -> str:
